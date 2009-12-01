@@ -1,0 +1,4 @@
+select-before-update : seulement pour les objets transient ajoutes a la session via update.
+
+Il semble qu'on puisse ajouter un where puisque check() verifie le number of rows affected et retourne une stale state exception
+mais pas dans la logique d'hibernate : apparement si on est pas en mode versionne, pas de notion de stale
