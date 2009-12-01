@@ -1,0 +1,744 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<HTML
+><HEAD
+><TITLE
+>CREATE RULE</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.64
+"><LINK
+REL="HOME"
+TITLE="Documentation PostgreSQL 7.2"
+HREF="set1.html"><LINK
+REL="UP"
+TITLE="Commandes SQL"
+HREF="r13308.html"><LINK
+REL="PREVIOUS"
+TITLE="   CREATE OPERATOR
+  "
+HREF="r15374.html"><LINK
+REL="NEXT"
+TITLE="   CREATE SEQUENCE
+  "
+HREF="r15696.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Documentation PostgreSQL 7.2</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="r15374.html"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="r15696.html"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SQL-CREATERULE"
+>CREATE RULE</A
+></H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN15557"
+></A
+><H2
+>Name</H2
+>   CREATE RULE
+  &nbsp;--&nbsp;    Definit une nouvelle règle.
+  </DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN15560"
+></A
+><H2
+>Synopsis</H2
+><TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="SYNOPSIS"
+>CREATE RULE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> AS ON <TT
+CLASS="REPLACEABLE"
+><I
+>event</I
+></TT
+>
+    TO <TT
+CLASS="REPLACEABLE"
+><I
+>object</I
+></TT
+> [ WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> ]
+    DO [ INSTEAD ] <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+>
+
+where <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+> can be:
+
+NOTHING
+|
+<TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+>
+|
+( <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> ; <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> ... )
+|
+[ <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> ; <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> ... ]
+  </PRE
+></TD
+></TR
+></TABLE
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-SQL-CREATERULE-1"
+></A
+><H3
+>    Entrées
+   </H3
+><P
+>&#13;    <P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+></DT
+><DD
+><P
+>	nom de la règle a créer.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>event</I
+></TT
+></DT
+><DD
+><P
+>	Eventfait partie des <TT
+CLASS="LITERAL"
+>SELECT</TT
+>,
+	<TT
+CLASS="LITERAL"
+>UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>DELETE</TT
+>
+	ou <TT
+CLASS="LITERAL"
+>INSERT</TT
+>.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>object</I
+></TT
+></DT
+><DD
+><P
+>Object est soit <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>
+	ou <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>.<TT
+CLASS="REPLACEABLE"
+><I
+>column</I
+></TT
+>.  (Actuellement, seule la forme
+	 <TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+> implémentée).
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+></DT
+><DD
+><P
+>	Certaines expressions conditionnelles-booléennes SQL.  L'expression
+conditionnelle ne doit pas se référer aux tables sauf
+	<TT
+CLASS="LITERAL"
+>new</TT
+> et
+	<TT
+CLASS="LITERAL"
+>old</TT
+>.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+></DT
+><DD
+><P
+>        La ou les requêtes générant 
+	l'<TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+>
+	peuvent être une clause SQL <TT
+CLASS="LITERAL"
+>SELECT</TT
+>, <TT
+CLASS="LITERAL"
+>INSERT</TT
+>,
+	<TT
+CLASS="LITERAL"
+>UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>DELETE</TT
+>, ou
+	<TT
+CLASS="LITERAL"
+>NOTIFY</TT
+>.
+       </P
+></DD
+></DL
+></DIV
+>
+   </P
+><P
+>    Dans <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+>
+    et <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+>,les noms de tables
+    spéciaux <TT
+CLASS="LITERAL"
+>new</TT
+> et <TT
+CLASS="LITERAL"
+>old</TT
+> peuvent être
+    utilisés en référence aux valeurs dans la table référencée (le
+    <TT
+CLASS="REPLACEABLE"
+><I
+>object</I
+></TT
+>).
+    <TT
+CLASS="LITERAL"
+>new</TT
+> est valide dans des règles ON INSERT et ON UPDATE 
+    en référence aux nouvelles lignes insérées ou mises à jour.
+    <TT
+CLASS="LITERAL"
+>old</TT
+> est valide dans des règles ON UPDATE et ON DELETE
+    en référence aux lignes existantes mises à jour ou supprimées.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-SQL-CREATERULE-2"
+></A
+><H3
+>    Sorties
+   </H3
+><P
+>&#13;    <P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="COMPUTEROUTPUT"
+>CREATE
+       </TT
+></DT
+><DD
+><P
+>	message retourné si la règle a été créée correctement.
+       </P
+></DD
+></DL
+></DIV
+>
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="R1-SQL-CREATERULE-1"
+></A
+><H2
+>   Description
+  </H2
+><P
+>   le <I
+CLASS="FIRSTTERM"
+>système de règles</I
+> de PostgreSQL permet de 
+définir une action alternative à exécuter sur les insertions, mises à jour,
+ou suppressions des tables de la base. Les règles sont utilisées pour
+implémenter également des vues de table.
+  </P
+><P
+>Les sémantiques d'une règle font qu'au moment où une instance individuelle
+(ligne) est accédée, mise à jour, insérée ou supprimée, il y a une ancienne
+instance (pour les sélections, mises à jour et suppressions) et une
+nouvelle instance (pour les insertions et les mises à jour).
+    Toutesl es règles du type donné et de la cible objet donnée (table)
+   sont examinées, dans un ordre non spécifié.  Si la
+   <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> spécifiée dans la
+   clause WHERE est vraie, la partie
+   <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+> de la règle est
+   exécutée.  L'<TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+> est faite
+   à la place de la requête d'origine si INSTEAD est spécifié; sinon
+   elle est faite après la requête d'origine dans le cas d'un ON INSERT, 
+ou avant la requête d'origine dans le cas d'un ON UPDATE ou ON DELETE.
+   Dans les deux <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+>
+   et <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+>, les valeurs des
+   champs dans l'ancienne instance et/ou la nouvelle instance sont substituées
+   en <TT
+CLASS="LITERAL"
+>old.</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>attribute-name</I
+></TT
+>
+   et <TT
+CLASS="LITERAL"
+>new.</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>attribute-name</I
+></TT
+>.
+  </P
+><P
+>   La partie <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+> de la règle
+   peut consister en une ou plusieurs requêtes. Pour écrires des requêtes
+multiples, entourez les soit de parenthèses soit de crochets carrés.
+Certaines requêtes seront exécutées dans un ordre spécifié (bien qu'il
+n'y ait pas de garantie sur l'ordre d'exécution des diverses règles
+pour un objet).  
+   L'<TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+> peut aussi être
+ NOTHING
+   indiquant aucune action. Ainsi, une règle DO INSTEAD NOTHING supprime
+la requête d'origine dans l'exécution (quand sa condition est vraie);
+ une règle DO NOTHING est inutile.
+  </P
+><P
+>   La partie <TT
+CLASS="REPLACEABLE"
+><I
+>action</I
+></TT
+> de la règle
+   s'exécute avec la même commande et identifiant de transaction que la
+   commande utilisateur qui provoque l'activation.
+  </P
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-SQL-CREATERULE-3"
+></A
+><H3
+>    Règles et vues
+   </H3
+><P
+>    Actuellement, les règles ON SELECT doivent être des règles 
+inconditionnelles INSTEAD  et 
+    doivent avoir des actions consistant en une seule requête SELECT.  
+Ainsi, une règle ON SELECT
+    changera l'objet de la table en une vue, dont les contenus visibles
+    sont les lignes retournées par la règle de la requête SELECT puisqu'elles
+    ont été stockées quelque part dans la table.  Il est considéré d'un
+meilleur style d'écrire une commande CREATE VIEW que de créer une table réelle
+    et de définir une règle ON SELECT pour celle-ci.
+   </P
+><P
+>    <A
+HREF="r16792.html"
+>   CREATE VIEW
+  </A
+> crée une table factice (sans stockage
+sous-jacent) et y associe une règle ON SELECT.
+    Le système n'admet pas les les mises à jour d'une vue, car il sait
+qu'il n'y a pas là de véritable table.
+    Vous pouvez créer l'illusion d'une vue qui puisse se mettre à jour
+en définissant des règles ON INSERT, ON UPDATE, et ON DELETE (ou
+n'importe quel sous-ensemble de celles qui sont nécessaires pour notre
+propos) pour remplacer les actions de mises à jour sur les vues
+par des mises à jour appropriées sur d'autres tables.
+   </P
+><P
+>    Il y a un problème si vous essayez d'utiliser les règles conditionnelles
+pour les mises à jour de vues; une règle INSTEAD <I
+CLASS="EMPHASIS"
+>doit</I
+> être
+inconditionnelle pour chaque action que vous voulez permettre sur la vue.
+    Si la règle est conditionnelle, ou n'est pas INSTEAD, le système
+rejettera encore les tentatives d'exécution de mise à jour, car il croit
+qu'il peut pour finir tenter d'exécuter l'action sur la table fictive
+dans certains cas. Si vous voulez manipuler tous les cas possibles de
+règles conditionnelles, vous pouvez; ajoutez juste une règle DO INSTEAD NOTHING
+pour vous assurer que le système comprenne qu'il ne sera jamais appelé sur
+des mises à jour de tables fictives. Ensuite, faites une règle conditionnelle
+non-INSTEAD.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-SQL-CREATERULE-4"
+></A
+><H3
+>    Notes
+   </H3
+><P
+>    Vous devez avoir une règle de définition d'accès à une table afin de
+    définir une règle sur elle. Utilisez <B
+CLASS="COMMAND"
+>GRANT</B
+>
+    et <B
+CLASS="COMMAND"
+>REVOKE</B
+> pour modifier les permissions.
+   </P
+><P
+>    Il est très important de faire attention d'éviter les règles circulaires.
+    Par exemple,  chacune des deux définitions de règles suivantes sont
+    acceptées par
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>, la commande
+    select provoquera un rapport d'erreur de la part de Postgres car les
+requêtes ont un cycle trop fréquent :
+
+<TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RULE "_RETemp" AS
+    ON SELECT TO emp
+    DO INSTEAD 
+	SELECT * FROM toyemp;
+
+CREATE RULE "_RETtoyemp" AS
+    ON SELECT TO toyemp
+    DO INSTEAD 
+	SELECT * FROM emp;</PRE
+></TD
+></TR
+></TABLE
+>
+
+      Cette tentative de sélection depuis EMP provoque un rapport d'erreur de
+      <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> car les requêtes ont un cycle trop
+fréquent :
+
+ <TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM emp;</PRE
+></TD
+></TR
+></TABLE
+>
+   </P
+><P
+>    Actuellement, si une règle contient une reqête NOTIFY, le NOTIFY sera
+exécuté inconditionnellement --- le NOTIFY sera renvoyé même s'il n'y a
+pas d'autres lignes que la règle à appliquer. Par exemple, dans
+      <TABLE
+BORDER="0"
+BGCOLOR="#E0E0E0"
+WIDTH="100%"
+><TR
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RULE notify_me AS ON UPDATE TO mytable DO NOTIFY mytable;
+
+UPDATE mytable SET name = 'foo' WHERE id = 42;
+      </PRE
+></TD
+></TR
+></TABLE
+>
+    un NOTIFY sera envoyé pendant l'UPDATE, qu'il en soit ainsi ou non il y
+    d'autres lignes avec id = 42.  Ceci est une restriction d'implémentation
+qui peut être fixée dans les prochaines versions.
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="R1-SQL-CREATERULE-4"
+></A
+><H2
+>   Compatibilité
+  </H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="R2-SQL-CREATERULE-5"
+></A
+><H3
+>    SQL92
+   </H3
+><P
+>    <B
+CLASS="COMMAND"
+>CREATE RULE</B
+> est une extension du langage <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>.
+    Il n'y a pas de <B
+CLASS="COMMAND"
+>CREATE RULE</B
+> en <SPAN
+CLASS="ACRONYM"
+>SQL92</SPAN
+>.
+   </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="r15374.html"
+>&#60;&#60;&#60; Previous</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="set1.html"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="r15696.html"
+>Next &#62;&#62;&#62;</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>CREATE OPERATOR</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="r13308.html"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>CREATE SEQUENCE</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
