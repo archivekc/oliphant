@@ -2,3 +2,17 @@ select-before-update : seulement pour les objets transient ajoutes a la session 
 
 Il semble qu'on puisse ajouter un where puisque check() verifie le number of rows affected et retourne une stale state exception
 mais pas dans la logique d'hibernate : apparement si on est pas en mode versionne, pas de notion de stale
+
+=== listen/notify ===
+CREATE RULE "listen_update" AS
+	ON UPDATE TO objetpersistent
+	DO ALSO NOTIFY 'UPDATE#'||objetpersistent||'#'||OLD.id; 
+
+pas possible : syntaxe = notify <id_postgre>
+
+si on peut convertir une string en identifiant, on pourrait utiliser un sha1 des infos interessantes. SHA1 en pgsql : 
+encode(digest('ma chaine', 'sha1'), 'hex')
+
+autres options : une rule par  en cache ou une rule pour tous les objets en cache updatee au fur et a mesure.
+sauf que pas de ALTER RULE, donc DROP + CREATE a chaque fois
+
