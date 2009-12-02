@@ -52,3 +52,6 @@ Arnaud Betremieux
 ----------------------------------------------------
 
 Concernant la possibilité d'utiliser une table mémoire contenant les pks des lignes updatées a la place du listen/notify : PostgreSQL peut stocker une table en RAM si on donne une LOCATION sur un ramdisk lors du CREATE... pas genial.
+
+Idée d'implementation en admettant que le NOTIFY marche comme on veut : un FlushEventListener qui regarde les notify et lance un StaleObjectStateException si une notif correspond a un objet du cache session. Faut-il que l'exception soit lancée aussi pour les objets non dirty ? Peut-être : ces objets ont pu servir de base aux modifications effectuées. L'application appelante peut toujours faire le tri dans les exceptions qui lui importent ou non puisqu'on indique l'objet dans l'exception.
+Idéalement, la méthode appelée pour faire la verif serait statique et dans une classe statique (?) et prendrait une session hibernate en parametre, et c'est cette méthode qui serait appelée par onFlush. De cette facon on peut utiliser la methode aussi a la demande hors flush.
