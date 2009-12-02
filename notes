@@ -23,3 +23,30 @@ Mais un patch a ete propose qui permet de passer un parametre dans un NOTIFY : h
 On va faire une methode (voir ou la mettre) qui verifie une liste d'objets, et les passe a stale si necessaire. L'utilisateur pourra l'utiliser a la demande, et on l'utilisera aussi au debut du flush.
 
 Dans un premier temps, on va faire un test en mettant tout le code dans flush
+
+Apply du patch notify sur le dernier snapshot (2 decembre) : le patch passe, mais ca ne marche pas (syntax error quand on ajoute un payload dans un NOTIFY). Clonage du git (miroir du cvs) de postgresql, et recuperation de la version sur laquelle le patch semble s'appliquer : acfff4ac821da0f8088550fed65c4 (16 Nov). Make se plaint qu'il manque le parseur Bison, ce qui confirme qu'il devait y avoir un probleme de grammaire avec le snapshot (apparement bison sert a generer les .c a partir des .y pour la compilation, ce qui fait que le parseur que j'utilisais sur le snapshot etait celui du .c qui n'etait pas a jour)
+
+Le patch semble ne supporter qu'un payload constant pour notify, ce qui n'apporte rien dans notre cas. En regardant la grammaire, il semblerait que le payload devrait etre un ctext_expr et pas un iconst, ce qui permettrait de mettre tout type de valeur comme payload, y compris un (select ...). Ca veut dire qu'il faudrait probablement transformer notify en preparable statement pour que le sql soit pris en compte.
+
+Mail a Joachim Wieland (joe@mcknight.de), auteur du patch, 2 dec 2009
+---------------------------------------------------
+
+Sujet : your patch to PostgreSQL listen/notify
+
+Hi,
+
+I had a look at your patch, and played with it a bit. If I understand your code well, the payload for the notify has to be constant.
+This bothers me since I was hoping the patch would allow me to pass a dynamic payload. My use case would be setting a notify rule on update on a table, and having the updated row pk, or some hashed form of it, as the notify payload, so listening applications could know which row was updated. The rule I had in mind would look like this in the simplest case:
+
+CREATE RULE "listen_update" AS
+	ON UPDATE TO my_table
+	DO ALSO NOTIFY update_my_table OLD.id;
+
+I'm not sure if there is any other way to do this apart from having a small table for storing updated ids, which would need to be queried regularly, which entails unnecessary database operations compared to a listen/notify implementation.
+To allow for my use case, I was thinking about adding to your patch by changing the payload definition in the grammar to a ctext_expr or aexpr, so as to allow as a payload anything that coalesces to a suitable string. I still have to investigate the full consequences of that on the rest of the PostgreSQL code, but I guess it would at least imply making NOTIFYs preparable statements.
+I was wondering what your opinion on this would be.
+
+Best regards,
+Arnaud Betremieux
+
+----------------------------------------------------
