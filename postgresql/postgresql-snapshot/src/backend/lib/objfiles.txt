@@ -1,1 +1,0 @@
-src/backend/lib/dllist.o src/backend/lib/stringinfo.o
