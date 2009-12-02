@@ -50,3 +50,5 @@ Best regards,
 Arnaud Betremieux
 
 ----------------------------------------------------
+
+Concernant la possibilité d'utiliser une table mémoire contenant les pks des lignes updatées a la place du listen/notify : PostgreSQL peut stocker une table en RAM si on donne une LOCATION sur un ramdisk lors du CREATE... pas genial.
