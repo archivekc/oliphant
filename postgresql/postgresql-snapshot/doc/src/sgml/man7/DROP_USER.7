@@ -1,0 +1,42 @@
+'\" t
+.\"     Title: DROP USER
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 2009-12-01
+.\"    Manual: PostgreSQL snapshot Documentation
+.\"    Source: PostgreSQL snapshot
+.\"  Language: English
+.\"
+.TH "DROP USER" "7" "2009-12-01" "PostgreSQL snapshot" "PostgreSQL snapshot Documentation"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+DROP_USER \- remove a database role
+.\" DROP USER
+.SH "SYNOPSIS"
+.sp
+.nf
+DROP USER [ IF EXISTS ] \fIname\fR [, \&.\&.\&.]
+.fi
+.SH "DESCRIPTION"
+.PP
+DROP USER
+is now an alias for
+DROP ROLE\&.
+.SH "COMPATIBILITY"
+.PP
+The
+DROP USER
+statement is a
+PostgreSQL
+extension\&. The SQL standard leaves the definition of users to the implementation\&.
+.SH "SEE ALSO"
+DROP ROLE

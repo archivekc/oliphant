@@ -1,0 +1,112 @@
+'\" t
+.\"     Title: NOTIFY
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 2009-12-01
+.\"    Manual: PostgreSQL snapshot Documentation
+.\"    Source: PostgreSQL snapshot
+.\"  Language: English
+.\"
+.TH "NOTIFY" "7" "2009-12-01" "PostgreSQL snapshot" "PostgreSQL snapshot Documentation"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+NOTIFY \- generate a notification
+.\" NOTIFY
+.SH "SYNOPSIS"
+.sp
+.nf
+NOTIFY \fIname\fR        
+.fi
+.SH "DESCRIPTION"
+.PP
+The
+NOTIFY
+command sends a notification event to each client application that has previously executed
+LISTEN \fIname\fR
+for the specified notification name in the current database\&.
+.PP
+NOTIFY
+provides a simple form of signal or interprocess communication mechanism for a collection of processes accessing the same
+PostgreSQL
+database\&. Higher\-level mechanisms can be built by using tables in the database to pass additional data (beyond a mere notification name) from notifier to listener(s)\&.
+.PP
+The information passed to the client for a notification event includes the notification name and the notifying session\(aqs server process
+PID\&. It is up to the database designer to define the notification names that will be used in a given database and what each one means\&.
+.PP
+Commonly, the notification name is the same as the name of some table in the database, and the notify event essentially means,
+\(lqI changed this table, take a look at it to see what\(aqs new\(rq\&. But no such association is enforced by the
+NOTIFY
+and
+LISTEN
+commands\&. For example, a database designer could use several different notification names to signal different sorts of changes to a single table\&.
+.PP
+When
+NOTIFY
+is used to signal the occurrence of changes to a particular table, a useful programming technique is to put the
+NOTIFY
+in a rule that is triggered by table updates\&. In this way, notification happens automatically when the table is changed, and the application programmer cannot accidentally forget to do it\&.
+.PP
+NOTIFY
+interacts with SQL transactions in some important ways\&. Firstly, if a
+NOTIFY
+is executed inside a transaction, the notify events are not delivered until and unless the transaction is committed\&. This is appropriate, since if the transaction is aborted, all the commands within it have had no effect, including
+NOTIFY\&. But it can be disconcerting if one is expecting the notification events to be delivered immediately\&. Secondly, if a listening session receives a notification signal while it is within a transaction, the notification event will not be delivered to its connected client until just after the transaction is completed (either committed or aborted)\&. Again, the reasoning is that if a notification were delivered within a transaction that was later aborted, one would want the notification to be undone somehow \(em but the server cannot
+\(lqtake back\(rq
+a notification once it has sent it to the client\&. So notification events are only delivered between transactions\&. The upshot of this is that applications using
+NOTIFY
+for real\-time signaling should try to keep their transactions short\&.
+.PP
+NOTIFY
+behaves like Unix signals in one important respect: if the same notification name is signaled multiple times in quick succession, recipients might get only one notification event for several executions of
+NOTIFY\&. So it is a bad idea to depend on the number of notifications received\&. Instead, use
+NOTIFY
+to wake up applications that need to pay attention to something, and use a database object (such as a sequence) to keep track of what happened or how many times it happened\&.
+.PP
+It is common for a client that executes
+NOTIFY
+to be listening on the same notification name itself\&. In that case it will get back a notification event, just like all the other listening sessions\&. Depending on the application logic, this could result in useless work, for example, reading a database table to find the same updates that that session just wrote out\&. It is possible to avoid such extra work by noticing whether the notifying session\(aqs server process
+PID
+(supplied in the notification event message) is the same as one\(aqs own session\(aqs
+PID
+(available from
+libpq)\&. When they are the same, the notification event is one\(aqs own work bouncing back, and can be ignored\&. (Despite what was said in the preceding paragraph, this is a safe technique\&.
+PostgreSQL
+keeps self\-notifications separate from notifications arriving from other sessions, so you cannot miss an outside notification by ignoring your own notifications\&.)
+.SH "PARAMETERS"
+.PP
+\fIname\fR
+.RS 4
+Name of the notification to be signaled (any identifier)\&.
+.RE
+.SH "EXAMPLES"
+.PP
+Configure and execute a listen/notify sequence from
+psql:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+LISTEN virtual;
+NOTIFY virtual;
+Asynchronous notification "virtual" received from server process with PID 8448\&.
+.fi
+.if n \{\
+.RE
+.\}
+.SH "COMPATIBILITY"
+.PP
+There is no
+NOTIFY
+statement in the SQL standard\&.
+.SH "SEE ALSO"
+LISTEN, UNLISTEN

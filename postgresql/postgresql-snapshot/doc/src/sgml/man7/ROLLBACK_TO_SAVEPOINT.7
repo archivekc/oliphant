@@ -1,0 +1,121 @@
+'\" t
+.\"     Title: ROLLBACK TO SAVEPOINT
+.\"    Author: The PostgreSQL Global Development Group
+.\" Generator: DocBook XSL Stylesheets v1.75.1 <http://docbook.sf.net/>
+.\"      Date: 2009-12-01
+.\"    Manual: PostgreSQL snapshot Documentation
+.\"    Source: PostgreSQL snapshot
+.\"  Language: English
+.\"
+.TH "ROLLBACK TO SAVEPOIN" "7" "2009-12-01" "PostgreSQL snapshot" "PostgreSQL snapshot Documentation"
+.\" -----------------------------------------------------------------
+.\" * set default formatting
+.\" -----------------------------------------------------------------
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.\" -----------------------------------------------------------------
+.\" * MAIN CONTENT STARTS HERE *
+.\" -----------------------------------------------------------------
+.SH "NAME"
+ROLLBACK_TO_SAVEPOINT \- roll back to a savepoint
+.\" ROLLBACK TO SAVEPOINT
+.\" savepoints: rolling back
+.SH "SYNOPSIS"
+.sp
+.nf
+ROLLBACK [ WORK | TRANSACTION ] TO [ SAVEPOINT ] \fIsavepoint_name\fR
+.fi
+.SH "DESCRIPTION"
+.PP
+Roll back all commands that were executed after the savepoint was established\&. The savepoint remains valid and can be rolled back to again later, if needed\&.
+.PP
+ROLLBACK TO SAVEPOINT
+implicitly destroys all savepoints that were established after the named savepoint\&.
+.SH "PARAMETERS"
+.PP
+\fIsavepoint_name\fR
+.RS 4
+The savepoint to roll back to\&.
+.RE
+.SH "NOTES"
+.PP
+Use
+RELEASE SAVEPOINT
+to destroy a savepoint without discarding the effects of commands executed after it was established\&.
+.PP
+Specifying a savepoint name that has not been established is an error\&.
+.PP
+Cursors have somewhat non\-transactional behavior with respect to savepoints\&. Any cursor that is opened inside a savepoint will be closed when the savepoint is rolled back\&. If a previously opened cursor is affected by a
+FETCH
+command inside a savepoint that is later rolled back, the cursor position remains at the position that
+FETCH
+left it pointing to (that is,
+FETCH
+is not rolled back)\&. Closing a cursor is not undone by rolling back, either\&. A cursor whose execution causes a transaction to abort is put in a cannot\-execute state, so while the transaction can be restored using
+ROLLBACK TO SAVEPOINT, the cursor can no longer be used\&.
+.SH "EXAMPLES"
+.PP
+To undo the effects of the commands executed after
+my_savepoint
+was established:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ROLLBACK TO SAVEPOINT my_savepoint;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Cursor positions are not affected by savepoint rollback:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+BEGIN;
+
+DECLARE foo CURSOR FOR SELECT 1 UNION SELECT 2;
+
+SAVEPOINT foo;
+
+FETCH 1 FROM foo;
+ ?column? 
+\-\-\-\-\-\-\-\-\-\-
+        1
+
+ROLLBACK TO SAVEPOINT foo;
+
+FETCH 1 FROM foo;
+ ?column? 
+\-\-\-\-\-\-\-\-\-\-
+        2
+
+COMMIT;
+.fi
+.if n \{\
+.RE
+.\}
+.SH "COMPATIBILITY"
+.PP
+The
+SQL
+standard specifies that the key word
+SAVEPOINT
+is mandatory, but
+PostgreSQL
+and
+Oracle
+allow it to be omitted\&. SQL allows only
+WORK, not
+TRANSACTION, as a noise word after
+ROLLBACK\&. Also, SQL has an optional clause
+AND [ NO ] CHAIN
+which is not currently supported by
+PostgreSQL\&. Otherwise, this command conforms to the SQL standard\&.
+.SH "SEE ALSO"
+BEGIN, COMMIT, RELEASE SAVEPOINT, ROLLBACK, SAVEPOINT
