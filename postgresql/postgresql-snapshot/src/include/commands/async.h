@@ -13,16 +13,30 @@
 #ifndef ASYNC_H
 #define ASYNC_H
 
+/*
+ * How long can a payload string possibly be? Actually it needs to be one
+ * byte less to provide space for the trailing terminating '\0'.
+ */
+#define NOTIFY_PAYLOAD_MAX_LENGTH	8000
+
+/*
+ * How many page slots do we reserve ?
+ */
+#define NUM_ASYNC_BUFFERS			4
+
 extern bool Trace_notify;
 
+extern void AsyncShmemInit(void);
+
 /* notify-related SQL statements */
-extern void Async_Notify(const char *relname);
+extern void Async_Notify(const char *relname, const char *payload);
 extern void Async_Listen(const char *relname);
 extern void Async_Unlisten(const char *relname);
 extern void Async_UnlistenAll(void);
 
 /* perform (or cancel) outbound notify processing at transaction commit */
-extern void AtCommit_Notify(void);
+extern void AtCommit_NotifyBeforeCommit(void);
+extern void AtCommit_NotifyAfterCommit(void);
 extern void AtAbort_Notify(void);
 extern void AtSubStart_Notify(void);
 extern void AtSubCommit_Notify(void);

@@ -1604,8 +1604,8 @@ CommitTransaction(void)
 	/* close large objects before lower-level cleanup */
 	AtEOXact_LargeObject(true);
 
-	/* NOTIFY commit must come before lower-level cleanup */
-	AtCommit_Notify();
+	/* Insert notifications sent by the NOTIFY command into the queue */
+	AtCommit_NotifyBeforeCommit();
 
 	/* Prevent cancel/die interrupt while cleaning up */
 	HOLD_INTERRUPTS();
@@ -1679,6 +1679,11 @@ CommitTransaction(void)
 	smgrDoPendingDeletes(true);
 
 	AtEOXact_MultiXact();
+
+	/*
+	 * Clean up Notify buffers and signal listening backends.
+	 */
+	AtCommit_NotifyAfterCommit();
 
 	ResourceOwnerRelease(TopTransactionResourceOwner,
 						 RESOURCE_RELEASE_LOCKS,

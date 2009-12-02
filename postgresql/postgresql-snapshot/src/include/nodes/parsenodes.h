@@ -2060,6 +2060,7 @@ typedef struct NotifyStmt
 {
 	NodeTag		type;
 	char	   *conditionname;	/* condition name to notify */
+	char	   *payload;		/* the payload string to be conveyed */
 } NotifyStmt;
 
 /* ----------------------

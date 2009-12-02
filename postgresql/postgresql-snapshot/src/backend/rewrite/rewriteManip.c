@@ -996,6 +996,7 @@ AddQual(Query *parsetree, Node *qual)
 		 * While clearly wrong, this is much more useful than refusing to
 		 * execute the rule at all, and extra NOTIFY events are harmless for
 		 * typical uses of NOTIFY.
+		 * XXX
 		 *
 		 * If it isn't a NOTIFY, error out, since unconditional execution of
 		 * other utility stmts is unlikely to be wanted.  (This case is not

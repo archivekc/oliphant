@@ -395,7 +395,7 @@ static TypeName *TableFuncTypeName(List *columns);
 %type <boolean> opt_varying opt_timezone
 
 %type <ival>	Iconst SignedIconst
-%type <str>		Sconst comment_text
+%type <str>		Sconst comment_text notify_payload
 %type <str>		RoleId opt_granted_by opt_boolean ColId_or_Sconst
 %type <list>	var_list
 %type <str>		ColId ColLabel var_name type_function_name param_name
@@ -5991,10 +5991,16 @@ DropRuleStmt:
  *
  *****************************************************************************/
 
-NotifyStmt: NOTIFY ColId
+notify_payload:
+			Sconst								{ $$ = $1; }
+			| /*EMPTY*/							{ $$ = NULL; }
+		;
+
+NotifyStmt: NOTIFY ColId notify_payload
 				{
 					NotifyStmt *n = makeNode(NotifyStmt);
 					n->conditionname = $2;
+					n->payload = $3;
 					$$ = (Node *)n;
 				}
 		;

@@ -219,6 +219,7 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 	 */
 	BTreeShmemInit();
 	SyncScanShmemInit();
+	AsyncShmemInit();
 
 #ifdef EXEC_BACKEND
 

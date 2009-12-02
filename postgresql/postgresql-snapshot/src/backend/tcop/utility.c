@@ -875,8 +875,12 @@ ProcessUtility(Node *parsetree,
 		case T_NotifyStmt:
 			{
 				NotifyStmt *stmt = (NotifyStmt *) parsetree;
-
-				Async_Notify(stmt->conditionname);
+				if (stmt->payload
+					&& strlen(stmt->payload) > NOTIFY_PAYLOAD_MAX_LENGTH - 1)
+					ereport(ERROR,
+							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+							 errmsg("payload string too long")));
+				Async_Notify(stmt->conditionname, stmt->payload);
 			}
 			break;
 
