@@ -3,6 +3,8 @@ select-before-update : seulement pour les objets transient ajoutes a la session 
 Il semble qu'on puisse ajouter un where puisque check() verifie le number of rows affected et retourne une stale state exception
 mais pas dans la logique d'hibernate : apparement si on est pas en mode versionne, pas de notion de stale
 
+Cyrille : on va ajouter la notion de stale avec un update where toutes les colonnes pour les objets non versionnes, interet : bases qui ne peuvent pas etre passees en mode versions
+
 === listen/notify ===
 CREATE RULE "listen_update" AS
 	ON UPDATE TO objetpersistent
@@ -16,3 +18,8 @@ encode(digest('ma chaine', 'sha1'), 'hex')
 autres options : une rule par  en cache ou une rule pour tous les objets en cache updatee au fur et a mesure.
 sauf que pas de ALTER RULE, donc DROP + CREATE a chaque fois
 
+Mais un patch a ete propose qui permet de passer un parametre dans un NOTIFY : https://commitfest.postgresql.org/action/patch_view?id=210 on va donc pouvoir passer la table et l'id de l'objet qui a ete victime d'un update avec la prochaine version de postgresql !
+
+On va faire une methode (voir ou la mettre) qui verifie une liste d'objets, et les passe a stale si necessaire. L'utilisateur pourra l'utiliser a la demande, et on l'utilisera aussi au debut du flush.
+
+Dans un premier temps, on va faire un test en mettant tout le code dans flush
