@@ -10,9 +10,9 @@ class PostgresqlNotifyFlushEventListener extends DefaultFlushEventListener
 				org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
 				if (notifications != null) {
 					for (int i=0; i<notifications.length; i++) {
-						Class c = notifications[i].getPayload()...
+						Class c = notifications[i].getPayload()... // todo : retrouver la classe avec le mapping... on ne peut pas mettre le nom de la classe directement dans le notify, les applis pouvant avoir differents noms de classe pour la meme table
 							pareil pour id
-							if (session.get(c, id) !== null) {throw new StaleObjectStateException(...);}
+							if (session.get(c, id) !== null) {throw new StaleObjectStateException(c, id);
 					}
 				}
 
