@@ -53,5 +53,13 @@ Arnaud Betremieux
 
 Concernant la possibilité d'utiliser une table mémoire contenant les pks des lignes updatées a la place du listen/notify : PostgreSQL peut stocker une table en RAM si on donne une LOCATION sur un ramdisk lors du CREATE... pas genial.
 
-Idée d'implementation en admettant que le NOTIFY marche comme on veut : un FlushEventListener qui regarde les notify et lance un StaleObjectStateException si une notif correspond a un objet du cache session. Faut-il que l'exception soit lancée aussi pour les objets non dirty ? Peut-être : ces objets ont pu servir de base aux modifications effectuées. L'application appelante peut toujours faire le tri dans les exceptions qui lui importent ou non puisqu'on indique l'objet dans l'exception.
-Idéalement, la méthode appelée pour faire la verif serait statique et dans une classe statique (?) et prendrait une session hibernate en parametre, et c'est cette méthode qui serait appelée par onFlush. De cette facon on peut utiliser la methode aussi a la demande hors flush.
+Idée d'implementation en admettant que le NOTIFY marche comme on veut : un FlushEventListener qui regarde les notify et lance un StaleObjectStateException si une notif correspond a un objet du cache session. Faut-il que l'exception soit lancée aussi pour les objets non dirty ? Peut-être : ces objets ont pu servir de base aux modifications effectuées. L'application appelante peut toujours faire le tri dans les exceptions qui lui importent ou non puisqu'on indique l'objet dans l'exception. EN FAIT NON : hibernate ne le fait pas donc on conserve la logique, par contre on va le proposer en option, puisque ca peut a voir du sens.
+Idéalement, la méthode appelée pour faire la verif serait statique et dans une classe statique (?) et prendrait une session hibernate en parametre, et c'est cette méthode qui serait appelée par onFlush. De cette facon on peut utiliser la methode aussi a la demande hors flush. Ajouter aussi une methode qui permet de verifier qu'un objet est stale. Les deux methodes ne generent pas d'exception (trop couteux), on se contente de retourner une liste d'objet stale :getStaleObjects(session), et un true/false pour le isStale(objetc). On retourne une exception dans le flushListener. Cyrille : il faudrait aussi un PersistListener pour lancer une exception si l'objet est stale au moment ou on le rend a la session pour persistence
+
+Juste une idee probablement completement inutile mais pour memoire : on peut creer une vue regroupant toutes les tables et une notification pour la vue.
+
+Il faudra penser a integrer les mappings restrictifs (WHERE ... ) pour ne pas tenir compte des objets non concernés dans les notifs ?
+
+Avec Oracle, ca a l'air faisable : http://download.oracle.com/docs/cd/B28359_01/java.111/b31224/dbmgmnt.htm#CHDEJECF
+
+
