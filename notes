@@ -60,6 +60,6 @@ Juste une idee probablement completement inutile mais pour memoire : on peut cre
 
 Il faudra penser a integrer les mappings restrictifs (WHERE ... ) pour ne pas tenir compte des objets non concernés dans les notifs ?
 
-Avec Oracle, ca a l'air faisable : http://download.oracle.com/docs/cd/B28359_01/java.111/b31224/dbmgmnt.htm#CHDEJECF
+Avec Oracle, ca a l'air faisable : http://download.oracle.com/docs/cd/B28359_01/java.111/b31224/dbmgmnt.htm#CHDEJECF par contre il semble qu'il faille un thread dedié au listener.
 
-
+Probleme : on a pas moyen de savoir si au moment du load, un objet n'est pas deja stale... 
