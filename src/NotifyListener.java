@@ -1,6 +1,6 @@
 class NotifyFlushEventListener extends EventListener
 {
-	private staleIds; // Map de session_id -> Map de UID (string identifiant table + objet) -> true ?
+	private staleIds; // Map de session_id -> Map de UID (string identifiant table + objet) -> derniere version ou null ?
 
 	public Serializable onflush(FlushEvent event) throws HibernateException {
 		return onPersist(event);
@@ -13,12 +13,15 @@ class NotifyFlushEventListener extends EventListener
 		}
 
 	public Serializable onLoad(PersistEvent event) throws HibernateException {
-		// On enregistre que l'objet est clean pour cette session donc on le retire des dirtyIds de cette session
+		updateStaleUids();
+		// il est peut etre deja stale. Peut on le verifier dans le cas ou on est versionne ? -> est on appele juste apres ou juste avant le load ? Dans ce cas, on regarde si dans staleIds on a une version et si c'est le cas on la compare a notre version. Si pas dans dirtyid on est clean. Si version correcte on retire de dirtyIds de cette session. Si version ancienne, on staleobjectstateexception, et on garde le dirtyid.
+		// Cas pas de versionnage : pn enregistre que l'objet est clean pour cette session donc on le retire des dirtyIds de cette session
 		}
 
 	public boolean isStale(Object object, Session session) {
+		if (in staleIds uid(object)) {return true;}
 		updateStaleUids();
-		return ...
+		if (in staleIds uid(object)) {return true;}
 		}
 
 	/*public ... getStaleObjectsClassesAndIds(Session session) {
@@ -35,21 +38,26 @@ class NotifyFlushEventListener extends EventListener
 		   }
 		}*/
 
+	private string uid(Object object) {
+		}
+
 	private void updateStaleUids(Session session) {
-		udpateStaleTablesAndIds(session, session.connection());
+		string[] newStaleUids = getLatestUpdates(session, session.connection());
+		for (int i-p; i<newStaleUids.
+		// on ajoute tout aux dirtyIds pour cette session
 		}
 
 	// PostgreSQL
-	private function udpateStaleUids(Session session, PGConnection conn) {
+	private string[] getLatestUpdates(Session session, PGConnection conn) {
 		org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
+		string[] latestUpdates;
 		if (notifications != null) {
-			for (int i=0; i<notifications.length; i++) {
-				Class c = notifications[i].getPayload()... // todo : retrouver la classe avec le mapping... on ne peut pas mettre le nom de la classe directement dans le notify, les applis pouvant avoir differents noms de classe pour la meme table
-					pareil pour id
+			for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
+			}
 		}
 
 	// Oracle
-	private function udpateStaleTablesAndIds(Session session, OracleConnection conn) {
+	private string[] getLatestUpdates(Session session, OracleConnection conn) {
 		...
 		}
 }
