@@ -2,7 +2,12 @@ class NotifyFlushEventListener extends EventListener
 {
 	private staleIds; // Map de session_id -> Map de UID (string identifiant table + objet) -> derniere version ou null ?
 
-	public Serializable onflush(FlushEvent event) throws HibernateException {
+	public Serializable onSessionCreation ?? (SessionCreationEvent event) throws HibernateException {
+		updateStaleUids();
+		// ensuite on supprimme tout (en fait on recupere les notifs arrivees jusqu'a maintenant puis on les enleve pour cette session
+		}
+
+	public Serializable onFlush(FlushEvent event) throws HibernateException {
 		return onPersist(event);
 		}
 

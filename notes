@@ -60,6 +60,38 @@ Juste une idee probablement completement inutile mais pour memoire : on peut cre
 
 Il faudra penser a integrer les mappings restrictifs (WHERE ... ) pour ne pas tenir compte des objets non concernés dans les notifs ?
 
-Avec Oracle, ca a l'air faisable : http://download.oracle.com/docs/cd/B28359_01/java.111/b31224/dbmgmnt.htm#CHDEJECF par contre il semble qu'il faille un thread dedié au listener.
+Avec Oracle, ca a l'air faisable : http://download.oracle.com/docs/cd/B28359_01/java.111/b31224/dbmgmnt.htm#CHDEJECF par contre il semble qu'il faille un thread dedié au listener. Par ailleurs Oracle ne retourne que des RowIDs... il va falloir trouver un moyen d'avoir une notif avec pk / version.
 
 Probleme : on a pas moyen de savoir si au moment du load, un objet n'est pas deja stale... 
+
+A voir : proxy -> on ne recupere de la base que suite a un appel de methode sur le proxy -> peut etre que l'evenement onload n'est pas celui qu'il faut regarder puisque dans ce cas au load on a pas encore fait le select
+
+Est-ce que objet.refresh() fait un load ? Et pour les objets recuperes via des queries HQL ?
+
+Que fait on lors d'un flush ? merge / update ?
+
+Comment ne pas perdre les infos de modification sur les instances detachees ? et comment faire pour si la session rend sa connection jdbc ? Est-ce qu'on est pas limite a operer sur le cache L2 ?
+
+On peut interdire a la session de rendre sa connection : ConnectionReleaseMode = ON_CLOSE
+
+Fermeture d'une session : flush close, mais close ne flush pas, ce qui permet de se debarasser de la session si elle est foireuse.
+
+Hibernate peut faire de la verification de stale sans versionning : avec optimistic-lock = all ! Ca ne marche que pour une session longue (qui suit l'objet)
+
+Pas grave si on pert des notifs : on essaye juste de prevenir le plus tot possible. Dans tous les cas, le stalestate ariverra au commit au pire.
+
+Avantages du systeme :
+	- stale avant load
+		- evition dirigee L2 par opposition au LRU
+		- Eviter traitements metier inutiles
+	- stale avant persist
+		- L2
+		- Eviter flush de tous les objets dirty de la transaction
+	- stale avant flush
+		- L2
+		- Eviter update voue a l'echec
+	- stale avant commit
+		- Evition L2 de version 
+		- Si on a pas recu la notif, tant pis, l'update se fait et on revient au fonctionnement hibernate normal
+
+On ne peut pas se contenter de travailler uniquement sur le L2 : il ne peut pas servir de reference : le fait qu'un objet ne soit pas dans le L2 ne veut pas dire qu'il est stale, il a pu etre evicté par un autre traitement
