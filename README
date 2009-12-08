@@ -1,0 +1,23 @@
+L'objectif de ce projet est d'utiliser les notifications pouvant être générées par les différents serveurs de base de données pour détecter la désynchronisation entre des objets instanciées via Hibernate et leur version dans la base de données le plus tôt possible.
+
+Utilisation typique d'Hibernate :
+1 Ouverture d'une session (depuis une SessionFactory)
+2 Ouverture d'une transaction
+3 Chargement d'un objet (Load)
+4 Modification de l'objet (Set)
+5 Passage de l'objet modifié a la session (Persist)
+6 Détection de la présence ou non de données modifiées dans l'objet (DirtyCheck)
+7 Préparation par la session des requêtes SQL de modification si besoin (Update)
+8 Exécution des requêtes (Flush) 
+9 Commit
+10 Fermeture de la session
+
+Dans le cas d'un objet non versionné, Hibernate ne détecte pas si l'objet est désynchronisé. L'objet de la base de données sera écrasé systématiquement. Dans le cas des objets versionnés, ou si on l'a demandé explicitement pour les objets non versionnés (option optimistic-lock = all), Hibernate prépare les requêtes SQL en intégrant une clause WHERE qui va rendre l'update inopérant si l'objet n'est pas à jour. Lors de l'exécution des requêtes, Hibernate regarde le nombre de lignes affectées et en déduit l'état de synchronisation. Si on est désynchronisé, une StaleObjectStateException est lancée.
+
+Actuellement, la désynchronisation est donc détectée au moment du flush. L'objectif de notre projet est d'éviter les requêtes inutiles à la base de données, voire même certains traitements mêtier inutiles car sur la base d'objets périmés.
+
+Le répertoire src contient un début d'implémentation d'un système répondant a ce besoin. Il s'agit d'un EventListener Hibernate. En attachant cet EventListener aux évènements Hibernate qui nous intéressent, une instance de notre Listener sera crée avec la sessionFactory, et on pourra suivre les objets des différentes sessions et en fonction des notifications reçues depuis la base de données, lancer une StaleObjectStateException à une étape précédant le Flush.
+
+Les bases de données considérées pour l'instant sont Oracle et PostgreSQL. Oracle semble avoir toutes les fonctionnalités nécessaires (voir le répertoire doc), tandis que le NOTIFY de PostgreSQL ne permet pas de passer ce qu'on veut comme information, et se limiterait donc a une notification par table, ce qui ne nous convient pas. Il pourrait éventuellement être intéressant de patcher PostgreSQL dans le cadre du projet (voir notes).
+
+Le fichier notes contient les notes prises au fur et à mesure des réflexions, des problèmes rencontrés et des discussions avec Cyrille Chepelov.
