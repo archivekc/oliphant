@@ -94,10 +94,18 @@ public class NotifyFlushEventListener extends EventListener
 
 	public boolean isKnownToBeStaleInL2(Object object)
 		{
-	 	EntityPersister persister = source.getFactory().getEntityPersister(entityName);
-		Versioning.getVersion(Object[] fields, persister) // Extract the optimisitc locking value out of the entity state snapshot.
-		// comparer version L2 et derniere version connue
-		// retourner toujours false pour les non versionnes
+	 	EntityPersister persister = session.getFactory().getEntityPersister(entityName);
+		if (persister.isVersionned())
+			{
+			Field[] fields = object.getDeclaredFields();
+			Versioning.getVersion(Object[] fields, persister) // Extract the optimisitc locking value out of the entity state snapshot.
+			// comparer version L2 et derniere version connue
+			}
+		else
+			{
+			// retourner toujours false pour les non versionnes puisqu'on ne sait pas quelle version est dans le L2
+			return false;
+			}
 		}
 
 	public boolean isKnownToBeStaleInSession(Object object, Session session)
