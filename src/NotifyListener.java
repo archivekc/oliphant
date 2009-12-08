@@ -6,7 +6,6 @@ public class NotifyFlushEventListener extends EventListener
 	// AutoFlushEventListener 	Defines the contract for handling of session auto-flush events.
 	// DeleteEventListener 	Defines the contract for handling of deletion events generated from a session.
 	// DirtyCheckEventListener 	Defines the contract for handling of session dirty-check events.
-	// EventSource 	 
 	// EvictEventListener 	Defines the contract for handling of evict events generated from a session.
 	// FlushEntityEventListener 	 
 	// FlushEventListener 	Defines the contract for handling of session flush events.
@@ -31,17 +30,22 @@ public class NotifyFlushEventListener extends EventListener
 	private Map staleUids = new HashMap(); // Map de session -> Map de UID (string identifiant table + objet) -> true ?
 	private Map versions = new HashMap(); // Map de UID -> derniere version connue
 
-	public Serializable onPostLoad(PostLoadEvent event) throws HibernateException
+	public Serializable ProcessLoadEvent(Event event, boolean throwStaleException) throws HibernateException
 		{
 		// il est peut etre deja stale. Peut on le verifier dans le cas ou on est versionne ? -> est on appele juste apres ou juste avant le load ? Dans ce cas, on regarde si dans staleIds on a une version et si c'est le cas on la compare a notre version. Si pas dans dirtyid on est clean. Si version correcte on retire de dirtyIds de cette session. Si version ancienne, on staleobjectstateexception, et on garde le dirtyid. Si pas de version connue, on garde la version comme plus recente connue.
 		// Cas pas de versionnage : pn enregistre que l'objet est clean pour cette session donc on le retire des dirtyIds de cette session
+		}
+
+	public Serializable onPostLoad(PostLoadEvent event) throws HibernateException
+		{
+		ProcessLoadEvent(event, true);
 		return processEvent(event);
 		}
 
-	public Serializable onRefresh(RefreshEvent event)
+	public Serializable onRefresh(RefreshEvent event) throws HibernateException
 		{
-		// appel a session.refresh(Object object) 
-		// identique a load ?
+		ProcessLoadEvent(event, true);
+		processEvent(event);
 		}
 
 	public Serializable onPersist(PersistEvent event) throws HibernateException
@@ -64,11 +68,12 @@ public class NotifyFlushEventListener extends EventListener
 		return processEvent(event);
 		}
 
-	public Serializable processEvent(PersistEvent event) throws HibernateException
+	public Serializable processEvent(Event event) throws HibernateException
 		{
-		updateStaleUidsAndVersions();
 		Object object = event.getObject();
-		if (isKnownToBeStaleInSession(object, event.getSession()))
+		Session session = event.getSession();
+		updateStaleUidsAndVersions(session);
+		if (isKnownToBeStaleInSession(object, session))
 			{
 			if (isKnownToBeStaleInL2(object))
 				{
@@ -86,7 +91,8 @@ public class NotifyFlushEventListener extends EventListener
 
 	public boolean isKnownToBeStaleInL2(Object object)
 		{
-		Versioning.getVersion(Object[] fields, EntityPersister persister) // Extract the optimisitc locking value out of the entity state snapshot.
+	 	EntityPersister persister = source.getFactory().getEntityPersister(entityName);
+		Versioning.getVersion(Object[] fields, persister) // Extract the optimisitc locking value out of the entity state snapshot.
 		// comparer version L2 et derniere version connue
 		// retourner toujours false pour les non versionnes
 		}
@@ -94,7 +100,7 @@ public class NotifyFlushEventListener extends EventListener
 	public boolean isKnownToBeStaleInSession(Object object, Session session)
 		{
 		String uid = uid(object);
-		updateStaleUidsAndVersions();
+		updateStaleUidsAndVersions(session);
 		if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
 		if ((versions.ContainsKey(uid)) && (version.get(uid) != object.get...) {return true;}
 		return false;
@@ -122,19 +128,21 @@ public class NotifyFlushEventListener extends EventListener
 		{
 		}
 
-	private void updateStaleUids(Session session)
+	private void updateStaleUidsAndVersions(Session session)
 		{
-		string[] newStaleUids = getLatestUpdates(session, session.connection());
+		if (!staleUids.ContainsKey(session)) {staleUids.put(session, new HashMap());} // pas d'event sur l'initialisation d'une session donc on ne peut le faire que la
+		Map newStaleUids = getLatestUpdates(session, session.connection());
 		for (int i; i<newStaleUids; i++)
+		foreach (uid, version)
 			{
-
+			if (version>0) {versions.put(uid, version);}
+						
 			}
-		if ... {staleUids.put(session, new HashMap());} // pas d'event sur l'initialisation d'une session donc on ne peut le faire que la
 		// on ajoute tout aux dirtyIds pour cette session
 		}
 
 	// PostgreSQL
-	private string[] getLatestUpdates(Session session, PGConnection conn)
+	private Map getLatestUpdates(Session session, PGConnection conn)
 		{
 		org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
 		string[] latestUpdates;
@@ -145,10 +153,17 @@ public class NotifyFlushEventListener extends EventListener
 		}
 
 	// Oracle
-	private string[] getLatestUpdates(Session session, OracleConnection conn)
+	private Map getLatestUpdates(Session session, OracleConnection conn)
 		{
+		Map updates = new HashMap()
+		
 		// TODO
 		return new string[];
+		}
+
+	private garbageCollector()
+		{
+		//fait le tour des sessions et retire celles qui ne sont plus open
 		}
 	}
 

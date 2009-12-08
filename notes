@@ -87,6 +87,9 @@ Avantages du systeme :
 	- stale avant persist
 		- L2
 		- Eviter flush de tous les objets dirty de la transaction
+	- stale avant dirtyCheck
+		- L2
+		- Eviter la verification de dirtyness, partant du principe qu'elle est plus couteuse que notre verification de version (?)
 	- stale avant flush
 		- L2
 		- Eviter update voue a l'echec
@@ -97,3 +100,9 @@ Avantages du systeme :
 On ne peut pas se contenter de travailler uniquement sur le L2 : il ne peut pas servir de reference : le fait qu'un objet ne soit pas dans le L2 ne veut pas dire qu'il est stale, il a pu etre evicté par un autre traitement
 
 Pour oracle, c'est bon, on peut mettre ce qu'on veut dans les messages de notif : http://www.oracle.com/technology/products/ias/toplink/technical/tips/DbChangeNotification/index.htm
+
+Comment gere t'on la notification d'un delete ? En versionné, a t'on un soft-delete ?
+
+Comment distingue t'on un objet versionné ? comment recuperer sa version ? comment la comparer a une autre ? toujours incrementé ? utiliser timestamp ?  Est-ce l'un ou l'autre ?
+
+Comment recuperer l'entityName d'un objet et son ID ?
