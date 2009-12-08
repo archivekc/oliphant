@@ -28,12 +28,15 @@ public class NotifyFlushEventListener extends EventListener
 	// SaveOrUpdateEventListener 	Defines the contract for handling of update events generated from a session.
 
 	private Map staleUids = new HashMap(); // Map de session -> Map de UID (string identifiant table + objet) -> true ?
+					       // Selon comment se fait la comparaison des objets session, il pourra etre necessaire
+					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
+					       // qui verifie juste si on a affaire a la meme instance de session
 	private Map versions = new HashMap(); // Map de UID -> derniere version connue
 
 	public Serializable ProcessLoadEvent(Event event, boolean throwStaleException) throws HibernateException
 		{
-		// il est peut etre deja stale. Peut on le verifier dans le cas ou on est versionne ? -> est on appele juste apres ou juste avant le load ? Dans ce cas, on regarde si dans staleIds on a une version et si c'est le cas on la compare a notre version. Si pas dans dirtyid on est clean. Si version correcte on retire de dirtyIds de cette session. Si version ancienne, on staleobjectstateexception, et on garde le dirtyid. Si pas de version connue, on garde la version comme plus recente connue.
-		// Cas pas de versionnage : pn enregistre que l'objet est clean pour cette session donc on le retire des dirtyIds de cette session
+		// il est peut etre deja stale. on regarde si dans versions on a cet objet et si c'est le cas on compare a notre version, sinon on considère comme clean (pas moyen de savoir). Si version correcte on retire de staleIds de cette session. Si version ancienne, on staleobjectstateexception, et on garde le staleId. Si pas de version connue, on garde la version comme plus recente connue.
+		// Cas pas de versionnage : on retire l'objet des dirtyIds de cette session. On a pas de moyen de savoir si il est stale.
 		}
 
 	public Serializable onPostLoad(PostLoadEvent event) throws HibernateException
@@ -124,7 +127,7 @@ public class NotifyFlushEventListener extends EventListener
 			}
 		}*/
 
-	private string uid(Object object)
+	private string uid(Object object) // Unique Identifier pour l'objet, qui est aussi utilisé dans les notifications du SGBD. Pourrait etre simplement <nom table><separateur><pk> mais il peut etre necessaire pour faire face a des restrictions par exemple du NOTIFY d'utiliser un SHA1 ou autre.
 		{
 		}
 
@@ -173,7 +176,7 @@ public class NotifyFlushEventListener extends EventListener
 //        ...
 //        <event type="flush">
 //            <listener class="ce listener"/>
-//            <listener class="org.hibernate.event.def.DefaultLoadEventListener"/>
+//            <listener class="org.hibernate.event.def.DefaultFlushEventListener"/>
 //        </event>
 //    </session-factory>
 //</hibernate-configuration>
