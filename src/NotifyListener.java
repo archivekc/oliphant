@@ -32,6 +32,7 @@ public class NotifyFlushEventListener extends EventListener
 					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
 					       // qui verifie juste si on a affaire a la meme instance de session
 	private Map versions = new HashMap(); // Map de UID -> derniere version connue
+	private Stack notificationQueue;
 
 	public Serializable ProcessLoadEvent(Event event, boolean throwStaleException) throws HibernateException
 		{
@@ -81,11 +82,7 @@ public class NotifyFlushEventListener extends EventListener
 			if (isKnownToBeStaleInL2(object))
 				{
 				// l'objet est stale en L2, on le retire du cache L2
-				session.getSessionFactory().evict(object);
-				// void 	evict(Class persistentClass, Serializable id)
-				//          Evict an entry from the second-level cache.
-				// void 	evictEntity(String entityName, Serializable id)
-				//          Evict an entry from the second-level cache.
+				session.getSessionFactory().evict(session.getEntityName(object), session.getIdentifier(object));
 				}
 			throw new StaleObjectStateException(object.class, id); // pas toujours pour un load, configurable
 			}
@@ -94,12 +91,13 @@ public class NotifyFlushEventListener extends EventListener
 
 	public boolean isKnownToBeStaleInL2(Object object)
 		{
-	 	EntityPersister persister = session.getFactory().getEntityPersister(entityName);
+		factory = ?;
+	 	EntityPersister persister = factory.getEntityPersister(entityName);
 		if (persister.isVersionned())
 			{
 			Field[] fields = object.getDeclaredFields();
-			Versioning.getVersion(Object[] fields, persister) // Extract the optimisitc locking value out of the entity state snapshot.
-			// comparer version L2 et derniere version connue
+			Versioning.getVersion(Object[] fields, persister) // Extract the optimistic locking value out of the entity state snapshot.
+			// comparer version L2 et derniere version connue. Comment recuperer version L2 ?
 			}
 		else
 			{
@@ -113,7 +111,7 @@ public class NotifyFlushEventListener extends EventListener
 		String uid = uid(object);
 		updateStaleUidsAndVersions(session);
 		if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
-		if ((versions.ContainsKey(uid)) && (version.get(uid) != object.get...) {return true;}
+		if ((versions.ContainsKey(uid)) && (!version.get(uid).equald(object.get...)) {return true;}
 		return false;
 		}
 
@@ -151,33 +149,47 @@ public class NotifyFlushEventListener extends EventListener
 			}
 		// on ajoute tout aux dirtyIds pour cette session
 		}
-
-	// PostgreSQL
-	private Map getLatestUpdates(Session session, PGConnection conn)
-		{
-		org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
-		string[] latestUpdates;
-		if (notifications != null)
-			{
-			for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
-			}
-		}
-
-	// Oracle
-	private Map getLatestUpdates(Session session, OracleConnection conn)
-		{
-		Map updates = new HashMap()
-		
-		// TODO
-		return new string[];
-		}
-
+ 
 	private garbageCollector()
 		{
 		//fait le tour des sessions et retire celles qui ne sont plus open
 		}
 	}
 
+
+/************************************
+ ***            Oracle            ***
+ ************************************/
+class DCNDemoListener implements DatabaseChangeListener
+	{
+	private void onDatabaseChangeNotification(DatabaseChangeEvent e)
+		{
+		System.out.println(e.toString());
+		}
+	}
+
+// Oracle
+private Map getLatestUpdates(Session session, OracleConnection conn)
+	{
+	Map updates = new HashMap()
+	
+	DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
+	DCNDemoListener list = new DCNDemoListener();
+	dcr.addListener(list);
+	}
+
+/************************************
+ ***            PostgreSQL        ***
+ ************************************/
+private Map getLatestUpdates(Session session, PGConnection conn)
+	{
+	org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
+	string[] latestUpdates;
+	if (notifications != null)
+		{
+		for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
+		}
+	}
 // Pour utiliser ce listener, dans la conf :
 //<hibernate-configuration>
 //    <session-factory>
