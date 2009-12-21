@@ -1,0 +1,790 @@
+function addOnload(theFunc)
+{var previous=window.onload;if(typeof window.onload!='function')
+{window.onload=theFunc;}
+else
+{window.onload=function()
+{previous();theFunc();}}}
+document.expandState="collapsed";document.highlightState="unhighlighted";document.numberState="plain";document.navState="shown";function is_ie()
+{var html=$$("html")[0],temp;try
+{temp=html.style.overflowY;html.style.overflowY="inherit";html.style.overflowY=temp;}
+catch(e)
+{return true;}
+return false;}
+var jumpto=window.location.href.replace(/.*\?chapter=/,"");if(jumpto.toUpperCase().match(/^[A-Z0-9.]+$/))
+{addOnload(function()
+{jump(jumpto.toUpperCase());});}
+var searchterm=unescape(window.location.href.replace(/.*\?search=/,"")).replace(/\+/g," ");var tahiti_searchterm;if(document.referer)
+{var tahiti_searchterm=unescape(document.referer.replace(/.*\?word=(.*?)(\&.*){0,1}/,"$1")).replace(/\+/g," ");if(tahiti_searchterm)
+{alert("Tahiti search term = "+tahiti_searchterm);}
+else
+{alert(document.referer);}}
+if(searchterm&&searchterm!=window.location.href)
+{addOnload(function()
+{var search_expr=new RegExp(searchterm,"i"),replace_expr=new RegExp(searchterm,"gi"),search_match=$b().innerHTML.match(search_expr);if(search_match)
+{$b().innerHTML=$b().innerHTML.replace(replace_expr,'<span class="tahiti-highlight-example"'+'>'+searchterm+'</span>',"g");}
+else
+{}});}
+else
+{}
+function $(param)
+{return document.getElementById(param);}
+function $$(param)
+{return document.getElementsByTagName(param);}
+function $b()
+{return document.body;}
+function $h()
+{return $$("head")[0];}
+function $html()
+{return $$("html")[0];}
+function $l()
+{return window.location.href;}
+function $i()
+{return document.body.innerHTML;}
+function $m()
+{return $$("meta");}
+function findPosX(obj)
+{var curleft=0;if(obj.offsetParent)
+while(1)
+{curleft+=obj.offsetLeft;if(!obj.offsetParent)
+break;obj=obj.offsetParent;}
+else if(obj.x)
+curleft+=obj.x;return curleft;}
+function findPosY(obj)
+{var curtop=0;if(obj.offsetParent)
+while(1)
+{curtop+=obj.offsetTop;if(!obj.offsetParent)
+break;obj=obj.offsetParent;}
+else if(obj.y)
+curtop+=obj.y;return curtop;}
+function firstHead()
+{var heads=$$("h1");if(heads&&heads.length>0)
+{for(var i=0;i<heads.length;i++)
+{if(heads[i].className==null||(heads[i].className!='sidebar_heading'&&heads[i].className!='tahiti-sidebar-heading'))
+{return heads[i];}}}
+return null;}
+function debug(what)
+{setStatus(what);}
+function setStatus(what)
+{window.status=what;}
+function find_home_link()
+{var anchors=$$("a");for(i=0;i<anchors.length;i++)
+{theAnchor=anchors[i];if(theAnchor.href)
+{if(theAnchor.href.match(/homepage$/))
+{return theAnchor;}}}}
+function make_me_as_wide_as(what,my_id)
+{var theThing=$(what);var me=$(my_id);if(theThing&&me)
+{if(me.offsetWidth<theThing.offsetWidth)
+{me.style.width=theThing.offsetWidth+"px";me.style.maxWidth=theThing.offsetWidth+"px";}
+else
+{theThing.style.width=me.offsetWidth+"px";theThing.style.maxWidth=me.offsetWidth+"px";}
+}
+else
+{if(theThing==null)
+{}
+if(me==null)
+{}}}
+function who_am_i()
+{var library=new Array();library["B19306_01"]={code:"db102",host:"www.oracle.com"};library["10/102"]={code:"db102",host:"tahiti-stage.us.oracle.com"};library["11/111"]={code:"db111",host:"tahiti-stage.us.oracle.com"};library["B25553_01"]={code:"cs101",host:"www.oracle.com"};library["cs/1012"]={code:"cs101",host:"tahiti-stage.us.oracle.com"};library["B14099_19"]={code:"as1012",host:"www.oracle.com"};library["101202fulldoc"]={code:"as1012",host:"tahiti-stage.us.oracle.com"};library["B25221_03"]={code:"as1013",host:"www.oracle.com"};library["101300doc_final"]={code:"as1013",host:"tahiti-stage.us.oracle.com"};library["B28196_01"]={code:"as1014",host:"www.oracle.com"};library["1014im_final"]={code:"as1014",host:"tahiti-stage.us.oracle.com"};var myAddress=window.location.href;var partno=myAddress.replace(/.*\/([a-z][0-9]{5})\/.*/,"$1");var mylib=myAddress.replace(/.*\/(B19306_01|10\/102|11\/111|B25553_01|cs\/1012|B14099_19|101202fulldoc|B25221_03|101300doc_final|B28196_01|1014im_final)\/.*/,"$1");var me=library[mylib];me.partno=partno;me.dad=me.code;var dad="db111";var host="www.oracle.com";if(dad==null||host==null)
+{alert("No search URL defined for library "+mylib);return;}
+else
+{;}
+return me;}
+function bumpBy(cur,delta)
+{var unit=cur.replace(/.*(px|em|pt|ex|%)$/,"$1");var value=parseFloat(cur.replace(/(.*)(px|em|pt|ex|%)$/,"$1"));value+=parseFloat(delta);return value.toString()+unit;}
+function enumerate(obj)
+{var str="";for(prop in obj)
+{try
+{str+=prop+" = "+obj[prop]+"\n";}
+catch(e)
+{}}
+alert(str);}
+function insert_section_numbers()
+{var els,el,h3s,theNumber,chapter,chapterHead,counter=0;els=$$("h1");if(els&&(els.length>0))
+{for(var i=0;i<els.length;i++)
+{if(els[i].className=="chapter")
+{theNumber=els[i].getElementsByTagName("span");if(theNumber&&(theNumber.length>0)&&(theNumber[0].className=="secnum"))
+{chapter=theNumber[0].innerHTML.replace(/^ *(.*?) *$/,"$1");}
+else
+{alert("Couldn't determine which chapter this is: "+theNumber[0]);try
+{alert(els[0].innerHTML);}
+catch(err)
+{}
+return false;}}
+else
+{}}
+if(chapter==null)
+{chapter='x.y';}}
+else
+{try
+{}
+catch(err)
+{}
+return false;}
+els=$$("h2");h3s=$$("h3");var cur_ypos,next_ypos,h3_counter,h3_ypos,h3,next_h3_to_consider=0;if(els!=null&&els.length>0)
+{for(var i=0;i<els.length;i++)
+{el=els[i];theNumber=el.getElementsByTagName("span");if(theNumber&&(theNumber.length>0)&&(theNumber[0].className=="secnum"))
+{return false;}
+else
+{el.innerHTML='<span class="secnum">'+chapter+'.'+(++counter)+' </span> '+el.innerHTML;if(h3s!=null&&h3s.length>0)
+{cur_ypos=findPosY(el);h3_counter=0;if(i+1<els.length)
+{next_ypos=findPosY(els[i+1]);}
+else
+{next_ypos=1000000000;}
+for(var j=next_h3_to_consider;j<h3s.length;j++)
+{h3=h3s[j];h3_ypos=findPosY(h3);if(h3_ypos>cur_ypos&&h3_ypos<next_ypos)
+{h3.innerHTML='<span class="secnum">'+chapter+'.'+counter+'.'+(++h3_counter)+'</span> '+h3.innerHTML;next_h3_to_consider++;}}}}}
+return true;}
+setStatus('Turning section numbers on');set_prefs(3,1);return false;}
+function jump(chapter)
+{if(window.location.href.match(/\/toc.htm/))
+{if(chapter==null)
+{chapter=prompt("Jump to chapter:","");}
+if((chapter!=null)&&chapter.match(/^([0-9.]+|[A-Za-z][0-9.]*)$/))
+{var toc_chapters=$$("h2");for(var i=0;i<toc_chapters.length;i++)
+{theChapter=toc_chapters[i];theNumber=theChapter.getElementsByTagName("span");if(theNumber&&(theNumber.length>0)&&(theNumber[0].className=="secnum")&&(theNumber[0].innerHTML==chapter.toUpperCase()))
+{var anchors=theChapter.getElementsByTagName("a");if(anchors&&(anchors.length>0))
+{for(var j=anchors.length-1;j>=0;--j)
+{if((anchors[j].id==null||!anchors[j].id.match(/^disclose/))&&anchors[j].href.match(/\.htm(#.+){0,1}/))
+{window.location.href=anchors[j].href;return false;}}}}}
+if(chapter.match(/\./))
+{var subheads=$$("li");if(subheads&&subheads.length>0)
+{var el,secnum;for(var i=0;i<subheads.length;i++)
+{el=subheads[i];secnum=el.getElementsByTagName("span");if(secnum&&secnum.length>0&&secnum[0].className=="secnum")
+{if(secnum[0].innerHTML==chapter.toUpperCase())
+{var anchors=el.getElementsByTagName("a");if(anchors&&anchors.length>0)
+{window.location.href=anchors[0].href;return false;}}}
+else
+{}}
+return false;}
+else
+{}}
+alert("Didn't find requested chapter in this book");return false;}
+return false;}
+else
+{var chapter=prompt("Jump to chapter:","");if((chapter!=null)&&chapter.match(/^[0-9]+$/))
+{if(typeof(chapters)!='undefined')
+{for(var i=0;i<chapters.length;i++)
+{if(chapters[i].section.toLowerCase()==chapter.toLowerCase())
+{window.location.href=chapters[i].file+'#'+chapters[i].anchor;return false;}}}
+window.location.href="toc.htm?chapter="+chapter;return false;}}}
+var findSubheadTag=(function()
+{var potential="ul",subheads=$$(potential);if(subheads!=null&&subheads.length>0)
+{return potential;}
+potential="dl";subheads=$$(potential);if(subheads!=null&&subheads.length>0)
+{return potential;}
+return null;});function inside_toc()
+{if($l().match(/toc.htm(l){0,1}(#.*){0,1}$/))
+{return true;}
+return false;}
+var flip_numbers_inside=(function(tag)
+{var containers=$$(tag),spans,el,new_setting;if(containers&&containers.length>0)
+{for(var j=0;j<containers.length;j++)
+{spans=containers[j].getElementsByTagName("span");if(spans&&spans.length>0)
+{for(var i=0;i<spans.length;i++)
+{el=spans[i];if(el.className=="secnum")
+{if((el.style.display==null||el.style.display=="none")&&new_setting==null)
+{new_setting="inline";document.numberState="plain";setStatus('Turning section numbers on');set_prefs(3,1);}
+else if(new_setting==null)
+{new_setting="none";document.NumberState="hidden";setStatus('Turning section numbers off');set_prefs(3,0);}
+el.style.display=new_setting;}}}}}});var turnOnNumbers=(function()
+{return toggleNumbers();});function eligibleNumbers()
+{var type=pageType();if(type=='index'||type=='preface'||type=='title'||type=='tables'||type=='figures'||type=='examples')
+{return false;}
+return true;}
+var toggleNumbers=(function()
+{if(!eligibleNumbers())
+{return false;}
+if(insert_section_numbers())
+{setStatus('Turning section numbers on');set_prefs(3,1);return false;}
+if(inside_toc())
+{flip_numbers_inside("li");}
+else
+{flip_numbers_inside("h2");flip_numbers_inside("h3");}
+return false;});var showNav=(function()
+{var navToggle=$("flipNav"),navToggleInline=$("flipNavInline"),bodyTags=$$("body"),htmlTags=$$("html"),navDiv=$("nav"),tempWidth;if(bodyTags&&htmlTags)
+{var theBody=$b(),theHTML=htmlTags[0];theBody.id="left-nav-present";theBody.style.paddingLeft="20em";if(is_ie())
+{theBody.style.overflowX="hidden";theBody.style.overflowY="auto";theBody.style.height="100%";theHTML.style.overflowY="hidden";theHTML.style.height="100%";theHTML.style.paddingTop="16px";theHTML.style.paddingBottom="3em";theBody.style.paddingRight="2em";theHTML.style.marginRight="0";theHTML.style.paddingRight="0";tempWidth=theBody.clientWidth;theBody.style.width=(theHTML.clientWidth-$('nav').clientWidth)+"px";window.resizeBy(0,0);}}
+else
+{alert("Couldn't find body element");}
+if(navToggle)
+{navToggle.onclick=hideNav;navToggle.innerHTML=navToggle.innerHTML.replace(/Show Navigation/,"Hide Navigation");navToggle.innerHTML=navToggle.innerHTML.replace(/show_nav/,"hide_nav");if(navDiv)
+{navDiv.style.display="block";set_prefs(1,0);if(is_ie())
+{theBody.style.width=tempWidth+"px";report_on_element(navDiv,"Nav");report_on_element(theHTML,"HTML");report_on_element(theBody,"Body");}}}
+else
+{alert("Couldn't find flipNav element");}
+if(navToggleInline)
+{navToggleInline.onclick=hideNav;navToggleInline.innerHTML=navToggleInline.innerHTML.replace(/Show Navigation/,"Hide Navigation");navToggleInline.innerHTML=navToggleInline.innerHTML.replace(/show_nav/,"hide_nav");}
+document.navState="shown";return false;});var rememberLayout=(function()
+{if(document.oldlayout==null)
+{var bodyTags=$$("body");var htmlTags=$$("html");var layout={};if(bodyTags&&htmlTags)
+{var theBody=bodyTags[0];var theHTML=htmlTags[0];layout.htmlOverflowY=theHTML.style.overflowY;layout.bodyOverflowY=theBody.style.overflowY;layout.bodyPaddingLeft=theBody.style.paddingLeft;layout.bodyOverflowX=theBody.style.overflowX;layout.bodyOverflowY=theBody.style.overflowY;layout.bodyHeight=theBody.style.height;layout.htmlOverflowY=theHTML.style.overflowY;layout.htmlHeight=theHTML.style.height;document.oldlayout=layout;}}});var restoreLayout=(function()
+{if(document.oldlayout)
+{var htmlTags=$$("html"),theBody=$b(),layout={};var theHTML=htmlTags[0];if(layout=document.oldlayout)
+{if(layout.htmlOverflowY!=theHTML.style.overflowY)
+{theHTML.style.overflowY=layout.htmlOverflowY;}
+if(layout.bodyOverflowY!=theBody.style.overflowY)
+{theBody.style.overflowY=layout.bodyOverflowY;}
+if(layout.bodyPaddingLeft!=theBody.style.paddingLeft)
+{layout.bodyPaddingLeft=theBody.style.paddingLeft;}
+if(layout.bodyOverflowX!=theBody.style.overflowX)
+{layout.bodyOverflowX=theBody.style.overflowX;}
+if(layout.bodyOverflowY!=theBody.style.overflowY)
+{layout.bodyOverflowY=theBody.style.overflowY;}
+if(layout.bodyHeight!=theBody.style.height)
+{layout.bodyHeight=theBody.style.height;}
+if(layout.htmlOverflowY!=theHTML.style.overflowY)
+{layout.htmlOverflowY=theHTML.style.overflowY;}
+if(layout.htmlHeight!=theHTML.style.height)
+{layout.htmlHeight=theHTML.style.height;}}}});var hideNav=(function()
+{restoreLayout();var navToggle=$("flipNav"),navToggleInline=$("flipNavInline"),htmlTags=$$("html"),navDiv=$("nav");var theBody=$b();theBody.id="";theBody.style.paddingLeft="0px";if(navToggle)
+{navToggle.onclick=showNav;navToggle.innerHTML=navToggle.innerHTML.replace(/Hide Navigation/,"Show Navigation");navToggle.innerHTML=navToggle.innerHTML.replace(/hide_nav/,"show_nav");if(navDiv)
+{navDiv.style.display="none";set_prefs(1,1);}}
+if(navToggleInline)
+{navToggleInline.onclick=showNav;navToggleInline.innerHTML=navToggleInline.innerHTML.replace(/Hide Navigation/,"Show Navigation");navToggleInline.innerHTML=navToggleInline.innerHTML.replace(/hide_nav/,"show_nav");if(navDiv)
+{navDiv.style.display="none";set_prefs(1,1);}}
+document.navState="hidden";return false;});var converterLevel=(function()
+{var allmeta=$$("meta");var theLevel;for(i=0;i<allmeta.length;i++)
+{if(allmeta[i].name=="generator")
+{theLevel=allmeta[i].content;return theLevel;}}
+return null;});function scrollPosition()
+{return(window.pageYOffset)?(window.pageYOffset):(document.documentElement)?document.documentElement.scrollTop:$b().scrollTop;}
+function jumpToElement(el)
+{window.location='#'+el.id;}
+function tbd(what)
+{alert('Function not implemented yet for '+what);}
+function pageType()
+{var myAddress=window.location.href;if(myAddress.match(/\/toc\.htm(#.*)?$/))
+{return'toc';}
+if(myAddress.match(/\/index\.htm(#.*)?$/))
+{return'index';}
+if(myAddress.match(/\/title\.htm(#.*)?$/))
+{return'title';}
+if(myAddress.match(/\/glossary\.htm(#.*)?$/))
+{return'glossary';}
+if(myAddress.match(/\/preface\.htm(#.*)?$/))
+{return'preface';}
+if(myAddress.match(/\/title\.htm(#.*)?$/))
+{return'title';}
+if(myAddress.match(/\/loe\.htm(#.*)?$/))
+{return'examples';}
+if(myAddress.match(/\/lof\.htm(#.*)?$/))
+{return'figures';}
+if(myAddress.match(/\/lot\.htm(#.*)?$/))
+{return'tables';}
+return'chapter';return'chapter';return'chapter';return'chapter';}
+function style_navbar(style)
+{style.display="none";style.top="0";style.left="0";style.width="19.5em";if(is_ie())
+{style.position="absolute";}
+else
+{style.position="fixed";}
+style.overflowX="hidden";style.overflowY="auto";style.padding="0px 0px 0px 0px";style.margin="0px 0px 0px 4px";style.height="100%";style.borderRight="solid 2px #ccc";style.zOrder="100";style.backgroundColor="white";}
+function report_on_element(el,label)
+{return;alert(label+": width = "+el.clientWidth+", height = "+el.clientHeight+": scrollWidth = "+el.scrollWidth+", scrollHeight = "+el.scrollHeight);}
+function find_widest_element()
+{return;var e=document.getElementsByTagName("table"),el,widest=e[0];for(var i=0,limit=e.length;i<limit;i++)
+{el=e[i];if(el.scrollWidth>widest.scrollWidth)
+{widest=el;}}
+alert("Widest element = ["+widest.innerHTML.substr(0,32)+"] with a scrollWidth of "+widest.scrollWidth);}
+function massage_table_widths()
+{return;function getStyle(el,prop)
+{var val;if(el.currentStyle)
+{val=el.currentStyle[prop];}
+else if(window.getComputedStyle)
+{val=document.defaultView.getComputedStyle(el,null).getPropertyValue(prop);}
+return val;}
+var e=document.getElementsByTagName("table"),counter=0,widths="",w;alert("Massaging table widths for "+e.length+" tables...");for(var i=0,limit=e.length;i<limit;i++)
+{el=e[i];if((w=getStyle(el,"width"))=="100%")
+{alert("Changing ("+w+")");el.style.width="auto";counter++;}
+else
+{alert("Passing ("+w+")");widths+="Width: "+w+"\n";}}
+if(counter>0)
+{alert("Removed 100% width from "+counter+" tables.");alert("Untouched tables had widths:\n"+widths);}
+e=document.getElementsByTagName("col");alert("Massaging column widths for "+e.length+" columns...");for(var i=0,limit=e.length;i<limit;i++)
+{el=e[i];if((w=getStyle(el,"width"))=="33%")
+{alert("Changing ("+w+")");el.style.width="auto";}
+else
+{alert("Passing ("+w+")");}}}
+function set_sensible_page_width()
+{if(is_ie())
+{var theBody=$b(),theHTML=$$("html")[0],navDiv=$("nav");theBody.style.width=(theHTML.clientWidth-$('nav').clientWidth-64)+"px";}}
+function set_cookie(value)
+{if(value.length!=16)
+{alert("Can't set preferences to non-16 length string '"+value+"'");return;}
+var now=new Date();var future=new Date();var expiry=now.getTime();expiry+=3600*1000*24*30;future.setTime(expiry);document.cookie='ORA_TAHITI_PREFS='+value+'; expires='+future.toGMTString()+'; path=/; domain=.oracle.com;';document.tahiti_prefs=value;}
+function get_prefs(which)
+{if(!(which>=0))
+{return"";}
+var prefs;if((prefs=document.tahiti_prefs)==null)
+{prefs=document.cookie;prefs=prefs.replace(/.*; *(ORA_TAHITI_PREFS=.*?)(;|$).*/,"$1");if(prefs.length==0)
+{return"";}
+if(!prefs.match(/^ORA_TAHITI_PREFS=/))
+{return"";}
+prefs=prefs.replace(/^ORA_TAHITI_PREFS=(.*)/,"$1");document.tahiti_prefs=prefs;}
+else
+{}
+return prefs.charAt(which);}
+function cookie_exists()
+{var prefs;if((prefs=document.tahiti_prefs)==null)
+{prefs=document.cookie;prefs=prefs.replace(/.*; *(ORA_TAHITI_PREFS=.*?)(;|$).*/,"$1");if(prefs.length==0)
+{return false;}
+if(!prefs.match(/^ORA_TAHITI_PREFS=/))
+{return false;}}
+else
+{return true;}}
+function set_prefs(which,value)
+{if(!(which>=0))
+{return;}
+if(value!=0&&value!=1)
+{return;}
+var prefs;if((prefs=document.tahiti_prefs)==null)
+{if(!cookie_exists())
+{set_cookie("----------------");}
+prefs=document.cookie;prefs=prefs.replace(/.*; *(ORA_TAHITI_PREFS=.*?)(;|$).*/,"$1");if(prefs.length==0)
+{return;}
+if(!prefs.match(/^ORA_TAHITI_PREFS=/))
+{return;}
+prefs=prefs.replace(/^ORA_TAHITI_PREFS=(.*)/,"$1");document.tahiti_prefs=prefs;}
+else
+{}
+var new_prefs=prefs.substring(0,which)+value+prefs.substring(which+1,16);set_cookie(new_prefs);}
+var arrow_width=18;var arrow_height=18;var arrow_style='margin: 0px 0px 0px 0px; padding: 0px; /* position: relative; top: 2px; */';var arrow_side_name='blue_med_dark_side.gif';var arrow_down_name='blue_med_dark_down.gif';var sidearrow='<img alt="Expand this chapter" width="'+arrow_width+'" height="'+arrow_height+'" style="'+arrow_style+'" src="http://tahiti.oracle.com/images/'+arrow_side_name+'" />';var downarrow='<img alt="Collapse this chapter" width="'+arrow_width+'" height="'+arrow_height+'" style="'+arrow_style+'" src="http://tahiti.oracle.com/images/'+arrow_down_name+'" />';var sidearrow_regexp=new RegExp("<img.*?"+arrow_side_name+".*?>","i");var downarrow_regexp=new RegExp("<img.*?"+arrow_down_name+".*?>","i");var flipOne=(function(evt)
+{var id=this.id.replace(/^[a-z]*/,"");var subheads=$("list"+id);if(subheads==null)
+{print("Can't find list of subheadings, id list"+id);return false;}
+var discloseControl=$("disclose"+id);if(discloseControl==null)
+{print("Can't find list of subheadings, id disclose"+id);return false;}
+if(!evt)
+{evt=window.event;}
+var shiftPressed;if(evt)
+{shiftPressed=evt.shiftKey;}
+if(subheads.style.display=="none")
+{if(shiftPressed)
+{expand();return false;}
+subheads.style.display="block";discloseControl.innerHTML=discloseControl.innerHTML.replace(sidearrow_regexp,downarrow);}
+else
+{if(shiftPressed)
+{collapse();return false;}
+subheads.style.display="none";discloseControl.innerHTML=discloseControl.innerHTML.replace(downarrow_regexp,sidearrow);}
+return false;});addOnload(function()
+{var findSubheadTag=(function()
+{var potential="ul";var subheads=$$(potential);if(subheads!=null&&subheads.length>0)
+{return potential;}
+potential="dl";subheads=$$(potential);if(subheads!=null&&subheads.length>0)
+{return potential;}
+return null;});var eligibleToc=(function()
+{var myAddress=window.location.href;if(!myAddress.match(/\/[a-z]+\.[0-9]+\//))
+{return false;}
+if(myAddress.match(/\/mix.[0-9]{3}\//))
+{return false;}
+var head1s=$$("h1");if(head1s==null||head1s.length==0)
+{return false;}
+var conflict=$("expandlink");if(conflict)
+{return false;}
+conflict=$("collapselink");if(conflict)
+{return false;}
+var firstHead1=head1s[0];if(!firstHead1.innerHTML.match(/\bContents\b/))
+{return false;}
+if(converterLevel()==null)
+{return false;}
+if(findSubheadTag()==null)
+{return false;}
+return true;});if(eligibleToc()==false)
+{return;}
+var head1s=$$("h1");var firstHead1=head1s[0];var head2s=$$("h2");var subheadTag=findSubheadTag();var subheads=$$(subheadTag);var listCounter=0;var firstLevel={};var print=(function(what)
+{alert(what);return;var msgArea=$("message");var msgBackup=$("footer");if(msgArea!=null)
+{msgArea.innerHTML+=what+"<br />";}
+else if(msgBackup!=null)
+{msgBackup.innerHTML+=what+"<br />";}});var analyze=(function()
+{var subheadTag=findSubheadTag();var subheads=$$(subheadTag);var head2s=$$("h2");var counter=0;for(i=0;i<subheads.length;i++)
+{currentList=subheads[i];var previousHead=currentList.previousSibling;if((previousHead!=null)&&(previousHead.nodeName!="H2"))
+{previousHead=previousHead.previousSibling;}
+else
+{}
+if(previousHead==null)
+{}
+else if(previousHead.nodeName!="H2")
+{}
+else
+{var disclosureControl='<a href="#" id="disclose'+counter+'">'+sidearrow+'</a> ';firstLevel[counter]=previousHead;previousHead.id="head"+counter;previousHead.innerHTML=disclosureControl+previousHead.innerHTML;var justCreated=$("disclose"+counter);if(justCreated!=null)
+{justCreated.numericID=counter;justCreated.title="Expand or Collapse";justCreated.onclick=flipOne;}
+else
+{}
+currentList.id="list"+counter;currentList.style.marginLeft='32px';counter++;}}
+for(i=0;i<head2s.length;i++)
+{currentHead=head2s[i];if(currentHead.innerHTML.match(/>Part (I|V|X)/))
+{currentHead.style.textAlign="center";currentHead.style.borderTop="medium solid #039";currentHead.style.marginTop="10px";currentHead.style.paddingTop="10px";}
+else if(!currentHead.innerHTML.match(/id="disclose/))
+{currentHead.innerHTML="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+currentHead.innerHTML;}
+else
+{}}});var expand=(function()
+{var subheads=$$(findSubheadTag());var head2s=$$("h2");for(i=0;i<subheads.length;i++)
+{var theList=subheads[i];theList.style.display="block";theList.style.marginTop="1px";theList.style.marginBottom="1px";}
+for(i=0;i<head2s.length;i++)
+{var theHead=head2s[i];if(!currentHead.innerHTML.match(/>Part (I|V|X)/))
+{theHead.style.marginTop="5px";}
+if(currentHead.innerHTML.match(/>Part (I|V|X)/))
+{theHead.style.marginBottom="1px";}
+var discloseControl=$("disclose"+i);if(discloseControl!=null)
+{discloseControl.innerHTML=discloseControl.innerHTML.replace(sidearrow_regexp,downarrow);}}
+return false;});var collapse=(function()
+{var subheads=$$(findSubheadTag());var head2s=$$("h2");for(i=0;i<subheads.length;i++)
+{var theList=subheads[i];var previousHead=theList.previousSibling;if((previousHead!=null)&&(previousHead.nodeName!="H2"))
+{previousHead=previousHead.previousSibling;}
+else
+{}
+if((previousHead!=null)&&(previousHead.nodeName=="H2"))
+{theList.style.display="none";theList.style.paddingLeft="18px";}
+theList.style.marginTop="1px";theList.style.marginBottom="1px";}
+for(i=0;i<head2s.length;i++)
+{var theHead=head2s[i];if(!currentHead.innerHTML.match(/>Part (I|V|X)/))
+{theHead.style.marginTop="5px";}
+theHead.style.marginBottom="1px";theHead.style.marginLeft="0px";theHead.style.paddingLeft="0px";var discloseControl=$("disclose"+i);if(discloseControl!=null)
+{discloseControl.innerHTML=discloseControl.innerHTML.replace(downarrow_regexp,sidearrow);discloseControl.style.padding="0px 6px";if(discloseControl.addEventListener==null)
+{discloseControl.onclick=flipOne;}}}
+return false;});analyze();collapse();var toolbar=document.createElement('div');var toolbarContent=document.createTextNode('');var fontsize="120%";var button_style='/* position: relative; top: 4px; */';var expand_all='<img id="expand_all_button" style="'+button_style+'" alt="Expand All" src="http://tahiti.oracle.com/images/expand_hlight_button.gif" />';var collapse_all='<img id="collapse_all_button" style="'+button_style+'" alt="Collapse All" src="http://tahiti.oracle.com/images/collapse_hlight_butt.gif" />';toolbar.appendChild(toolbarContent);toolbar.innerHTML='<a style="font-size: 120%; border: none /* 1px solid #cc9 */; padding: 4px 6px 4px 6px; " href="#" id="expandlink">'+expand_all+'</a><span style="font-size: 120%;"> | </span><a style="font-size: 120%; border: none /* 1px solid #cc9 */; padding: 4px 6px 4px 6px; " href="#" id="collapselink">'+collapse_all+'</a> (Or click any <span id="expand_collapse_icon">'+sidearrow+'</span> icon to expand that chapter.) <a id="collapse_preference_expanded" href="http://www.oracle.com/pls/db111/prefers_toc_collapsed">Always expand all.</a>';firstHead1.parentNode.insertBefore(toolbar,firstHead1.nextSibling);var expandLink=$('expandlink');var collapseLink=$('collapselink');expandLink.onclick=expand;collapseLink.onclick=collapse;var always_link=$("collapse_preference_expanded");var always_expand;var always_collapse;var bumpDown=(function(id)
+{var theItem=$(id);if(theItem)
+{try
+{theItem.style.position="inherit";theItem.style.position="relative";theItem.style.top="4px";}
+catch(err){}}});bumpDown("expand_all_button");bumpDown("collapse_all_button");bumpDown("expand_collapse_icon");always_expand=(function()
+{expand();var me=$("collapse_preference_expanded");if(me)
+{me.innerHTML="Always collapse all";me.id="collapse_preference_collapsed";if(me.href)
+{me.href=me.href.replace(/_collapsed/,"_expanded");}
+me.onclick=always_collapse;}
+else
+{}
+return true;});always_collapse=(function()
+{collapse();var me=$("collapse_preference_collapsed");if(me)
+{me.innerHTML="Always expand all";me.id="collapse_preference_expanded";if(me.href)
+{me.href=me.href.replace(/_expanded/,"_collapsed");}
+me.onclick=always_expand;}
+else
+{}
+return true;});if(always_link)
+{always_link.onclick=always_expand;}
+else
+{always_link=$("collapse_preference_collapsed");if(always_link)
+{always_link.onclick=always_collapse;}}});
+function showPlatform(what)
+{var platform_name=new RegExp(what,"i");var head1s=document.getElementsByTagName("h1");for(i=0;i<head1s.length;i++)
+{theHead=head1s[i];theText=theHead.innerHTML;if(what==null)
+{theHead.style.display="block";if(theHead.className.match(/libportletheader/))
+{var para=theHead.nextSibling;while(para&&((para.nodeName=='P')||(para.nodeName=='#text')))
+{if(para.nodeName=='P')
+{para.style.display="block";}
+para=para.nextSibling;}}}
+else if(theHead.className==null)
+{theHead.style.display="block";}
+else if(!theHead.className.match(/libportletheader/))
+{theHead.style.display="block";}
+else if(theHead.id.match(platform_name))
+{theHead.style.display="block";var para=theHead.nextSibling;while(para&&((para.nodeName=='P')||(para.nodeName=='#text')))
+{if(para.nodeName=='P')
+{para.style.display="block";}
+para=para.nextSibling;}}
+else if(!theText.match(/Installation Guides/i))
+{theHead.style.display="block";}
+else
+{theHead.style.display="none";var para=theHead.nextSibling;while(para&&((para.nodeName=='P')||(para.nodeName=='#text')))
+{if(para.nodeName=='P')
+{para.style.display="none";}
+para=para.nextSibling;}}}
+var tables=document.getElementsByTagName("table");for(i=0;i<tables.length;i++)
+{theTable=tables[i];if(what==null)
+{theTable.style.display="block";}
+else if(theTable.className==null)
+{theTable.style.display="block";}
+else if(!theTable.className.match(/libdoclist/))
+{theTable.style.display="block";}
+else if(theTable.id.match(platform_name))
+{theTable.style.display="block";}
+else if(!theTable.id.match(/install/i))
+{theTable.style.display="block";}
+else
+{theTable.style.display="none";}}}
+addOnload(function()
+{var needs_absolute_position=(function()
+{if(window.XMLHttpRequest)
+{return false;}
+return true;});var eligibleBookNav=(function()
+{var myAddress=window.location.href;try
+{var myParams=window.location.search.substring(1);if(myParams.match(/type=popup/))
+{return false;}}
+catch(err)
+{}
+if(!myAddress.match(/\/[a-z]+\.[0-9]+\//))
+{return false;}
+if(myAddress.match(/\/mix.[0-9]+\//))
+{return false;}
+if(top!=self)
+{return false;}
+var head1s=$$("h1");if(head1s==null||head1s.length==0)
+{return false;}
+var conflict=$("nav");if(conflict)
+{return false;}
+if(converterLevel()==null)
+{return false;}
+return true;});if(eligibleBookNav()==false)
+{return;}
+var makeNav=(function()
+{function categories()
+{return'<h1 class="tahiti-sidebar-heading">Main Categories</h1>'+
+'<div>'+
+'<ul style="list-style: none; margin-top: 0px; padding-top: 0px; margin-left: 0em; padding-left: 1.5em; text-indent: -1em;">'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=11&frame=">Installation</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=1&frame=">Getting Started</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=4&frame=">Administration</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=5&frame=">Application Development</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=16&frame=">Grid Computing</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=14&frame=">High Availability</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=6&frame=">Data Warehousing</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=7&frame=">Content Management and Unstructured Data</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=15&frame=">Information Integration</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=25&frame=">Security</a></li>'+
+'<li><a href="http://www.oracle.com/pls/db111/portal.portal_db?selected=99&frame=">Favorites</a></li>'+
+'</ul>'+
+'</div>';}
+function shortcutLinks()
+{return'<h1 class="tahiti-sidebar-heading">Quick Lookup</h1>'+
+'<div class="shortcut_links">'+
+'<a href="http://www.oracle.com/pls/db111/ranked?advanced=1" target="_top">Advanced Search</a> &#149; '+
+'<a href="http://www.oracle.com/pls/db111/portal.all_books" target="_top">Master Book List</a> &#149; '+
+'<a href="http://www.oracle.com/pls/db111/lookup?id=MINDX" target="_top">Master Index</a> &#149; '+
+'<a href="http://www.oracle.com/pls/db111/lookup?id=MGLOS" target="_top">Master Glossary</a> &#149; '+
+'<a href="http://www.oracle.com/pls/db111/lookup?id=ERRMG" target="_top">Error Messages</a>'+
+'</div>';}
+function flipNavContainer()
+{return'<div id="flipNav_container" style="margin-top: 20px; clear: both;"></div>';}
+function bug()
+{return' ';}
+function searchForm()
+{return'<div class="simple_search_form_container" style="padding-bottom: 5px; padding-left: 8px; padding-top: 0px;">'+
+'<div style="margin-top: 6px;">'+
+'<form class="simple_search_form" style="margin-bottom: 6px;" action="http://www.oracle.com/pls/db111/search" method="get">'+
+'<input type="hidden" name="remark" value="quick_search" />'+
+'<span style=" display: none; "><label for="search_field_navbar">Search:</label></span>'+
+'<span>'+
+'<input style="margin-bottom: 3px;" type="text" name="word" value="" class="search_field" id="search_field_navbar" />'+
+'</span>'+
+'<span class="text">'+
+'<input style="margin-bottom: 3px; margin-left: 4px;" type="submit" value="Search" class="text" />'+
+'<div>'+
+'<input type="radio" value="'+partno+'" name="partno" id="search_single_book_navbar" /><label for="search_single_book_navbar">This book</label> '+
+'<input type="radio" value="" name="partno" checked="checked" id="search_entire_library_navbar" /><label for="search_entire_library_navbar">Entire library</label>'+
+'</div>'+
+'</span>'+
+'</form>'+
+'</div>';}
+function historyPlaceholder()
+{return'<div id="docid_history"></div>';}
+function keyboardControls()
+{return'<div id="keyboard_shortcut_controls" style="display: none">'+
+'<h1 class="tahiti-sidebar-heading">Keyboard Shortcuts</h1>'+
+'<form id="shortcut_selection_form">'+
+'<input type="radio" id="shortcut_radio_enable" name="shortcut_radio" value="on" onclick="if (document.shortcuts_enable) { document.shortcuts_enable(); } return true;" /> Enable shortcuts'+
+'<input type="radio" id="shortcut_radio_disable" checked="checked" name="shortcut_radio" value="off" onclick="if (document.shortcuts_disable) { document.shortcuts_disable(); } return true;" /> Disable shortcuts'+
+'<div style="text-align: center;"><a href="javascript:keyboard_help()">What is this?</a></div>'+
+'</form>'+
+'</div>';}
+function rssFeeds()
+{return'<div id="rss_feeds" style="border: 1px solid black; margin: 2px; margin-top: 8px; margin-right: 8px; padding: 2px;">'+
+'<p style="margin: 0px; text-align: center;">New and changed books:</p>'+
+'<a href="http://www.oracle.com/pls/db111/new_html"><img style="text-decoration: none;" src="http://oracleimg.com/admin/images/feed-icon-14x14.png" /> HTML documents</a> '+
+'<a href="http://www.oracle.com/pls/db111/new_pdf"><img style="text-decoration: none;" src="http://oracleimg.com/admin/images/feed-icon-14x14.png" /> PDF files</a>'+
+'</div>';}
+function chapterDetails()
+{var output='<h1 class="tahiti-sidebar-heading" id="nav_this_page">This Page</h1>'+
+'<div style="margin-right: 8px; margin-left: 0.5em;">';var divCounter=0;var allHead1s=$$("h1");if(allHead1s)
+{var theHead1=allHead1s[0];if(theHead1.id==null||theHead1.id.length==0)
+{theHead1.id="insertedID"+divCounter++;}
+else
+{}
+var innerText=theHead1.innerHTML.replace(/<.*?>/g,"");output+='<div style="margin-left: 0.5em; margin-right: 8px;"><a href="#'+theHead1.id+'">'+innerText+'</a></div>';if(theHead1.className!=null&&theHead1.className=="glossary")
+{var allParas=$$("p");if(allParas)
+{for(i=0;i<allParas.length;i++)
+{var thePara=allParas[i];if(thePara.className!=null&&thePara.className=="glossterm")
+{if(thePara.id==null||thePara.id.length==0)
+{thePara.id="insertedID"+divCounter++;}
+var innerText=thePara.innerHTML.replace(/<.*?>/g,"");output+='<div style="padding-left: 1.5em; padding-right: 8px;"><a href="#'+thePara.id+'">'+innerText+'</a></div>';}}}}
+else if((theHead1.className!=null&&theHead1.className=="toc")||theHead1.innerHTML=="Contents")
+{}
+else
+{var allHead2s=$$("h2");for(i=0;i<allHead2s.length;i++)
+{var theHead2=allHead2s[i];if(theHead2.id==null||theHead2.id.length==0)
+{theHead2.id="insertedID"+divCounter++;}
+var innerText=theHead2.innerHTML.replace(/<.*?>/g,"");innerText=innerText.replace(/&nbsp;/g,"");output+='<div style="padding-right: 8px; padding-left: 1.5em;"><a href="#'+theHead2.id+'">'+innerText+'</a></div>';}}}
+output+='</div>';return output;}
+var bookTitle=(function()
+{var allmeta=$$("meta");for(i=0;i<allmeta.length;i++)
+{if(allmeta[i].name=="doctitle")
+{return''+
+'<h1 class="tahiti-sidebar-heading" id="nav_this_book">This Book</h1>'+
+'<div id="book_contents">'+
+'<p style="margin-top: 0px; padding-top: 4px; padding-left: 0.5em;"><a href="toc.htm">'+allmeta[i].content+'</a></p>'+
+'</div>'+
+'';}}
+return'';});rememberLayout();var head1s=$$("div");if(head1s)
+{var firstHead1=head1s[0];var myAddress=window.location.href;var partno=myAddress.replace(/.*\/([a-z][0-9]{5})\/.*/,"$1");var navDiv=document.createElement('div');var navContent=document.createTextNode('');navDiv.appendChild(navContent);navDiv.innerHTML=flipNavContainer()+
+bug()+
+searchForm()+
+shortcutLinks()+
+'<div style="margin-right: 8px;">'+
+categories()+
+chapterDetails()+
+'</div>'+
+bookTitle()+
+historyPlaceholder()+
+keyboardControls()+
+rssFeeds();firstHead1.parentNode.insertBefore(navDiv,firstHead1.nextSibling);navDiv.id="nav";style_navbar(navDiv.style);}
+var toolbar=$('flipNav_container');if(toolbar!=null)
+{toolbar.innerHTML='<a id="flipNavInline" style="float: right; clear: both; margin-top: 4px;" href="#"><img src="http://tahiti.oracle.com/images/show_nav.gif" border="0" alt="Show Navigation" /></a><br />';}
+else
+{alert("flipNav_container does not exist");}
+var navToggle=$("flipNav");if(navToggle)
+{navToggle.onclick=showNav;}
+else
+{alert("Can't find flipNav element");}
+var navToggleInline=$("flipNavInline");if(navToggleInline)
+{navToggleInline.onclick=showNav;}
+else
+{alert("Can't find flipNavInline element");}});var head1s=$$("h1");var firstHead1=head1s[0];var toolbar=document.createElement('div');var toolbarContent=document.createTextNode('');toolbar.appendChild(toolbarContent);toolbar.innerHTML='<a id="flipNav" style="float: left; clear: left; margin-top: 4px;" href="#"><img src="http://tahiti.oracle.com/images/show_nav.gif" border="0" alt="Show Navigation" /></a><br />';firstHead1.parentNode.insertBefore(toolbar,firstHead1);makeNav();var should_hide_nav=get_prefs(1);if(should_hide_nav!="1")
+{showNav();}
+else
+{document.navState="hidden";}});
+addOnload(function()
+{var addCommentForm=(function()
+{var myAddress=window.location.href;var myPath=myAddress.replace(/.*\/([a-z]+\.[0-9]+\/[a-z][0-9]{5}\/.*.htm).*/,"$1");var comment_form=''+
+'<div id="comment_form" class="comments">'+
+'<h1>User Comments</h1>'+
+'<form method="post" action="http://www.oracle.com/pls/db111/add_comment">'+
+'<input type="hidden" name="path" value="'+myPath+'" />'+
+'<label for="user_comments_title"><b>Title:</b></label> '+
+'<input type="text" name="title" size="40" id="user_comments_title" />'+
+'<div style="margin-top: 4px; margin-left: 3em;">'+
+'<input type="radio" checked="checked" name="submitter" id="post_public" value="arnaud.betremieux@keyconsulting.fr" /> <label for="post_public">Post as arnaud.betremieux@keyconsulting.fr</label> '+
+'<input type="radio" name="submitter" id="post_anonymous" value="" /> <label for="post_anonymous">Post anonymously</label>'+
+'</div>'+
+'<label for="user_comments_body"><span style="display: none;">Comment body:</span></label>'+
+'<textarea rows="10" cols="80" name="comment_text" id="user_comments_body" style="width: 40em; overflow-x: auto; margin-top: 4px;">'+
+'</textarea>'+
+'<div>'+
+'<p style="margin-bottom: 4px; margin-top: 2px;">'+
+'By submitting a comment, you confirm that you have read and agreed to '+
+'the <a id="comment_ts_and_cs" href="http://www.oracle.com/pls/db111/comment_disclaimer">terms and conditions</a>.'+
+'</p>'+
+'<p>'+
+'This feedback form is for documentation corrections and suggestions. '+
+'Because of the volume of suggestions, we cannot reply to every comment. '+
+'In particular:'+
+'</p>'+
+'<ul>'+
+'<li>If you have general questions about this Oracle software product, '+
+'<a target="_blank" href="http://forums.oracle.com/">consult the OTN forums</a> instead.</li>'+
+'<li>If you are encountering a software problem and need to request support or consulting, '+
+'<a target="_blank" href="http://support.oracle.com/">file a service request on My Oracle Support</a>.</li>'+
+'<li>If you want to order hardcopy documentation, go to '+
+'<a target="_blank" href="http://shop.oracle.com/">the Oracle Store</a>.</li>'+
+'</ul>'+
+'<input type="submit" value="Submit a new comment" />'+
+'<span style="font-size: 90%; margin-left: 20px;">(Comments are moderated and will not appear immediately.)</span>'+
+'</div>'+
+'</form>'+
+'</div>';var allDivs=$$("div");for(i=allDivs.length-1;i>=0;i--)
+{if(allDivs[i].className=="footer")
+{var footer=allDivs[i];footer.id="comment_block";footer.innerHTML=comment_form+footer.innerHTML;}}});var comment_counter=0;var addComment=(function(theComment)
+{var allDivs=$$("div");for(i=allDivs.length-1;i>=0;i--)
+{if(allDivs[i].className=="footer")
+{var footer=allDivs[i];footer.innerHTML='<div id="comment'+(++comment_counter)+'" style="border: 1px solid #ccc; padding: 5px; margin-top: 8px;"><div><b>From:</b> '+theComment.name+'</div>'+'<div><b>Title: </b>'+theComment.title+'</div>'+'<div><b>Date: </b>'+theComment.submitted+'</div>'+'<div>'+theComment.text+'</div>'+'</div>'+footer.innerHTML;}}});var converterLevel=(function()
+{var allmeta=$$("meta");var theLevel;for(i=0;i<allmeta.length;i++)
+{if(allmeta[i].name=="generator")
+{theLevel=allmeta[i].content;return theLevel;}}
+return null;});var eligibleComments=(function()
+{var myAddress=window.location.href;if(myAddress.match(/\/mix.[0-9]{3}\//))
+{return false;}
+if(myAddress.match(/\/nav\//))
+{return false;}
+if(!myAddress.match(/\.htm(\?.*){0,1}(#.*){0,1}$/))
+{return false;}
+var conflict=$("comment_form");if(conflict)
+{return false;}
+conflict=$("comment_block");if(conflict)
+{return false;}
+conflict=$("comment_announcement");if(conflict)
+{return false;}
+return true;});if(eligibleComments()==false)
+{return;}
+var head1s=$$("h1");var firstHead1=head1s[0];var print=(function(what)
+{alert(what);return;var msgArea=$("message");var msgBackup=$("footer");if(msgArea!=null)
+{msgArea.innerHTML+=what+"<br />";}
+else if(msgBackup!=null)
+{msgBackup.innerHTML+=what+"<br />";}});var this_page=$("nav_this_page");if(this_page)
+{this_page.innerHTML+=' <span style="font-size: 80%; font-weight: normal;">[<a href="#comment_block">0 comments</a>, <a href="#comment_form">Leave a comment</a>]</p>';}
+var comment=new Object(); 
+var showTerms=(function()
+{var newwindow=window.open('http://www.oracle.com/pls/db111/comment_disclaimer','TermsWindow','scrollbars=yes,width=500,height=400,screenx=50,screeny=50,location=no,toolbar=no,directories=no');return false;});addCommentForm();var terms_link=$("comment_ts_and_cs");if(terms_link)
+{terms_link.onclick=showTerms;}});
+addOnload(function() { make_me_as_wide_as("search_this_book","comment_announcement"); });
+addOnload(function()
+{var myAddress=window.location.href;var anchor;var tab;if(myAddress.match(/#/))
+{anchor=myAddress.replace(/.*#(.*)/,"$1");}
+if(myAddress.match(/\bselected=[0-9]+\b/))
+{tab=myAddress.replace(/.*\bselected=([0-9]+)\b.*/,"$1")
+}
+if(tab==99)
+{return;}
+var anchors=$$("a");var theAnchor;var progress="";var portal_id=new RegExp("\\bselected="+tab+"\\b");var anchor_id=new RegExp("#"+anchor+"$");for(i=0;i<anchors.length;i++)
+{theAnchor=anchors[i];if(theAnchor.className=="linkanchor")
+{progress+="+";if(theAnchor.href.match(portal_id))
+{if
+(((anchor==null)&&(theAnchor.href.match(/#/)==false))||theAnchor.href.match(anchor_id))
+{var id=theAnchor.id;var numeric=id.replace(/^a/,"");var theDiv=$("div"+numeric);if(id!=null)
+{theDiv=$("div"+numeric);}
+else
+{theDiv=theAnchor;alert("Starting at node with ID "+theDiv.id);theDiv=theDiv.parentNode;alert("Walking up the DOM to node with ID "+theDiv.id);theDiv=theDiv.parentNode;alert("Walking up the DOM to node with ID "+theDiv.id);theDiv.style.backgroundColor="#e6e6ef";alert("Changing color of div with ID "+theDiv.id);theDiv=null;}
+if(theDiv!=null)
+{theDiv.style.backgroundColor="#e6e6ef";theDiv=theDiv.parentNode;if(theDiv!=null)
+{theDiv=theDiv.parentNode;if(theDiv!=null)
+{flipEntry(theDiv.id);}
+else
+{}}
+else
+{}}
+else
+{}}}}
+else
+{progress+="-"+theAnchor.className;}}
+});
+var magic_width_constant=280;addOnload(function()
+{var theBody=document.body,theHTML=$$('html')[0],examine;var eligibleScrollbars=(function()
+{var hcw=theHTML.clientWidth;var how=theHTML.offsetWidth;var hsw=theHTML.scrollWidth;var bcw=theBody.clientWidth;var bow=theBody.offsetWidth;var bsw=theBody.scrollWidth;if((bcw!=bow)&&(bsw!=bow)&&(bcw==bsw))
+{return true;}
+return false;});if(eligibleScrollbars())
+{try
+{bodyTags[0].style.width=(htmlTags[0].offsetWidth-magic_width_constant)+"px";}
+catch(err){}
+htmlTags[0].style.overflowY="hidden";var resize_handler=(function()
+{var body=document.body;var html=$$("html")[0];if(body&&html)
+{try
+{body.style.width=(html.clientWidth-$('nav').clientWidth)+"px";}
+catch(err){}}});window.onresize=resize_handler;}});
+addOnload(function()
+{var eligibleSynch=(function()
+{var vendor=navigator.vendor;if(vendor)
+{var is_safari=vendor.match(/Apple/);if(is_safari)
+{return false;}}
+var myAddress=window.location.href;if(myAddress.match(/\.htm#.+/))
+{return true;}
+return false;});if(eligibleSynch()==true)
+{var anchor=window.location.href.replace(/.*#/,"");var el=$(anchor);if(el)
+{var scroll_position=findPosY(el);window.scrollTo(0,scroll_position);}
+}});addOnload(function()
+{var navDiv=$("nav");if(navDiv)
+{navDiv.style.visibility="visible";}
+var body=$b();if(body)
+{var left_nav_present=body.getElementById(param);if(left_nav_present)
+{left_nav_present.style.overflow="visible";}}});function findPosY(obj)
+{var curtop=0,offset=is_ie()?$$('html')[0].scrollTop:0;if(obj.offsetParent)
+{while(1)
+{curtop+=obj.offsetTop;if(!obj.offsetParent)
+break;obj=obj.offsetParent;}}
+else if(obj.y)
+{curtop+=obj.y;}
+return curtop;}
