@@ -76,15 +76,14 @@ public class NotifyFlushEventListener extends EventListener
 		{
 		Object object = event.getObject();
 		Session session = event.getSession();
-		updateStaleUidsAndVersions(session);
+		updateStaleUidsAndVersions(session.getSessionFactory());
 		if (isKnownToBeStaleInSession(object, session))
 			{
 			if (isKnownToBeStaleInL2(object))
 				{
-				// l'objet est stale en L2, on le retire du cache L2
 				session.getSessionFactory().evict(session.getEntityName(object), session.getIdentifier(object));
 				}
-			throw new StaleObjectStateException(object.class, id); // pas toujours pour un load, configurable
+			throw new StaleObjectStateException(object.class, id); // TODO: Should be optional for loads
 			}
 		return null;
 		}
@@ -101,7 +100,7 @@ public class NotifyFlushEventListener extends EventListener
 			}
 		else
 			{
-			// retourner toujours false pour les non versionnes puisqu'on ne sait pas quelle version est dans le L2
+			// We can't know what version is in L2, so we can't know if it's stale
 			return false;
 			}
 		}
@@ -109,73 +108,145 @@ public class NotifyFlushEventListener extends EventListener
 	public boolean isKnownToBeStaleInSession(Object object, Session session)
 		{
 		String uid = uid(object);
-		updateStaleUidsAndVersions(session);
+		updateStaleUidsAndVersions(session.getSessionFactory());
 		if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
 		if ((versions.ContainsKey(uid)) && (!version.get(uid).equald(object.get...)) {return true;}
 		return false;
 		}
 
-	/*public ... getStaleObjectsClassesAndIds(Session session)
-		{
-		TODO (Peut etre ?)
-		if (session.get(c, id) !== null) {throw new StaleObjectStateException(c, id);
-		}
-
-	private getClassName(String tableName)
-		{
-		for (Iterator iter = cfg.getClassMappings(); iter.hasNext(); )
-			{
-			PersistentClass pc = (PersistentClass) iter.next();
-			if (tableName.equalsIgnoreCase(pc.getTable().getName()))
-				{
-				className = pc.getClassName();
-				}
-			}
-		}*/
-
 	private string uid(Object object) // Unique Identifier pour l'objet, qui est aussi utilisé dans les notifications du SGBD. Pourrait etre simplement <nom table><separateur><pk> mais il peut etre necessaire pour faire face a des restrictions par exemple du NOTIFY d'utiliser un SHA1 ou autre.
 		{
 		}
 
-	private void updateStaleUidsAndVersions(Session session)
+	private void updateStaleUidsAndVersions(MagicSessionFactory sessionFactory)
 		{
-		if (!staleUids.ContainsKey(session)) {staleUids.put(session, new HashMap());} // pas d'event sur l'initialisation d'une session donc on ne peut le faire que la
-		Map newStaleUids = getLatestUpdates(session, session.connection());
-		for (int i; i<newStaleUids; i++)
-		foreach (uid, version)
+		// TODO: for implementations in which notifications update is synchronous, call it here
+		while (!notificationQueue.empty())
 			{
-			if (version>0) {versions.put(uid, version);}
-						
+			Notofication notif = notificationQueue.pop();
+			if (notif.getVersion()) {versions.put(notif.getUid(), Notif.getVersion());}
+				{
+				}
+			List<Session> sessions = sessionFactory.getSessions())
+			for (int i=0; i<sessions.length(); i++)
+				{
+				Session session = sessions[i];
+				if (!staleUids.ContainsKey(session)) {staleUids.put(session, new HashMap());}
+				staleUids.get(session).put(uid, notif.getUid());
+				}
 			}
-		// on ajoute tout aux dirtyIds pour cette session
+		
 		}
  
 	private garbageCollector()
 		{
-		//fait le tour des sessions et retire celles qui ne sont plus open
+		// TODO: remove the keys of closed sessions from the staleUids Map
 		}
 	}
 
+public class Notification
+	{
+	private long Version;
+	private String uid;
+
+	public long getVersion()
+		{
+		return version;
+		}
+
+	public void setVersion(long v)
+		{
+		version = v;
+		}
+
+	public String getUid()
+		{
+		return uid;
+		}
+
+	public void setUid(String u)
+		{
+		uid = u;
+		}
+	}
+
+public class MagicSessionFactory extends SessionFactory
+	{
+	private List<Session> sessions;
+
+	public MagicSessionFactory(SessionFactory)
+		{
+		}
+
+	public List<Session> getSessions()
+		{
+		return sessions;
+		}
+
+	public Session openSession()
+		{
+		Session session = super.openSession();
+		sessions.Add(session);
+		return session;
+		}
+
+	public Session openSession(Connection connection)
+		{
+		super.openSession(connection);
+		}
+
+	public Session openSession(Connection connection, boolean flushBeforeCompletionEnabled, boolean autoCloseSessionEnabled, ConnectionReleaseMode connectionReleaseMode)
+		{
+		super.openSession(connection, flushBeforeCompletionEnabled, autoCloseSessionEnabled, connectionReleaseMode);
+		}
+
+	public Session openSession(Connection connection, Interceptor sessionLocalInterceptor)
+		{
+		super.openSession(connection, sessionLocalInterceptor);
+		}
+
+	public Session openSession(Interceptor sessionLocalInterceptor)
+		{
+		super.openSession(sessionLocalInterceptor);
+		}
+	}
+
+public class MagicAnnotationConfiguration extends AnnotationConfiguration
+	{
+	public MagicAnnotationConfiguration()
+		{
+		super();
+		NotifyListener listener = new NotifyListener();
+		this.getSessionEventListenerConfig().setLoadEventListener(listener);
+		this.getSessionEventListenerConfig().setFlushEventListener(listener);
+		}
+
+	public MagicSessionFactory buildSessionFactory()
+		{
+		SessionFactory sf = super.buildSessionFactory();
+		return (MagicSessionFactory) sf;
+		}
+	}
 
 /************************************
  ***            Oracle            ***
  ************************************/
-class DCNDemoListener implements DatabaseChangeListener
+public class DCNDemoListener implements DatabaseChangeListener
 	{
 	private void onDatabaseChangeNotification(DatabaseChangeEvent e)
 		{
 		System.out.println(e.toString());
 		}
-	}
 
-// Oracle
-private Map getLatestUpdates(Session session, OracleConnection conn)
-	{
-	Map updates = new HashMap()
-	
-	DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
-	DCNDemoListener list = new DCNDemoListener();
-	dcr.addListener(list);
+	// Oracle
+	private Map getLatestUpdates(Session session, OracleConnection conn)
+		{
+		Map updates = new HashMap()
+		
+		DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
+		DCNDemoListener list = new DCNDemoListener();
+		dcr.addListener(list);
+		}
 	}
 
 /************************************
