@@ -110,7 +110,7 @@ public class NotifyFlushEventListener extends EventListener
 		String uid = uid(object);
 		updateStaleUidsAndVersions(session.getSessionFactory());
 		if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
-		if ((versions.ContainsKey(uid)) && (!version.get(uid).equald(object.get...)) {return true;}
+		//if ((versions.ContainsKey(uid)) && (!versions.get(uid).equals(object.get...)) {return true;} // TODO: versionned entities
 		return false;
 		}
 
@@ -125,8 +125,6 @@ public class NotifyFlushEventListener extends EventListener
 			{
 			Notofication notif = notificationQueue.pop();
 			if (notif.getVersion()) {versions.put(notif.getUid(), Notif.getVersion());}
-				{
-				}
 			List<Session> sessions = sessionFactory.getSessions())
 			for (int i=0; i<sessions.length(); i++)
 				{
@@ -135,7 +133,6 @@ public class NotifyFlushEventListener extends EventListener
 				staleUids.get(session).put(uid, notif.getUid());
 				}
 			}
-		
 		}
  
 	private garbageCollector()
@@ -231,21 +228,48 @@ public class MagicAnnotationConfiguration extends AnnotationConfiguration
 /************************************
  ***            Oracle            ***
  ************************************/
-public class DCNDemoListener implements DatabaseChangeListener
+public class OracleNotifyListener implements DatabaseChangeListener
 	{
-	private void onDatabaseChangeNotification(DatabaseChangeEvent e)
+	public void setUp()
 		{
-		System.out.println(e.toString());
+		Properties prop = new Properties();
+		prop.setProperty(OracleConnection.DCN_NOTIFY_ROWIDS, "true");
+		prop.setProperty(OracleConnection.DCN_IGNORE_INSERTOP, "true");
+		prop.setProperty(OracleConnection.DCN_NOTIFY_CHANGELAG, 0);
+
+		/* DCN_IGNORE_DELETEOP
+			If set to true, DELETE operations will not generate any database change event.
+		DCN_IGNORE_INSERTOP
+			If set to true, INSERT operations will not generate any database change event.
+		DCN_IGNORE_UPDATEOP
+			If set to true, UPDATE operations will not generate any database change event.
+		DCN_NOTIFY_CHANGELAG
+			Specifies the number of transactions by which the client is willing to lag behind.
+			Note: If this option is set to any value other than 0, then ROWID level granularity of information will not be available in the events, even if the DCN_NOTIFY_ROWIDS option is set to true.
+		DCN_NOTIFY_ROWIDS
+			Database change events will include row-level details, such as operation type and ROWID.
+		DCN_QUERY_CHANGE_NOTIFICATION
+			Activates query change notification instead of object change notification.
+			Note: This option is available only when running against an 11.0 database.
+		NTF_LOCAL_HOST
+			Specifies the IP address of the computer that will receive the notifications from the server.
+		NTF_LOCAL_TCP_PORT
+			Specifies the TCP port that the driver should use for the listener socket.
+		NTF_QOS_PURGE_ON_NTFN
+			Specifies if the registration should be expunged on the first notification event.
+		NTF_QOS_RELIABLE
+			Specifies whether or not to make the notifications persistent, which comes at a performance cost.
+		NTF_TIMEOUT
+			Specifies the time in seconds after which the registration will be automatically expunged by the database. */
+
+		DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
+		DCNDemoListener listener = new DCNDemoListener();
+		dcr.addListener(listener);
 		}
 
-	// Oracle
-	private Map getLatestUpdates(Session session, OracleConnection conn)
+	public void onDatabaseChangeNotification(DatabaseChangeEvent e)
 		{
-		Map updates = new HashMap()
-		
-		DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
-		DCNDemoListener list = new DCNDemoListener();
-		dcr.addListener(list);
+		System.out.println(e.toString());
 		}
 	}
 
@@ -261,13 +285,3 @@ private Map getLatestUpdates(Session session, PGConnection conn)
 		for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
 		}
 	}
-// Pour utiliser ce listener, dans la conf :
-//<hibernate-configuration>
-//    <session-factory>
-//        ...
-//        <event type="flush">
-//            <listener class="ce listener"/>
-//            <listener class="org.hibernate.event.def.DefaultFlushEventListener"/>
-//        </event>
-//    </session-factory>
-//</hibernate-configuration>
