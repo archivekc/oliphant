@@ -106,3 +106,5 @@ Comment gere t'on la notification d'un delete ? En versionné, a t'on un soft-de
 Comment distingue t'on un objet versionné ? comment recuperer sa version ? comment la comparer a une autre ? toujours incrementé ? utiliser timestamp ?  Est-ce l'un ou l'autre ?
 
 Comment recuperer l'entityName d'un objet et son ID ?
+
+Note: attention au triggers et au regles before update : on pourrait en avoir une autre qui changerait la requete. Donc il faut utiliser un after update. Du coup, on ne peut pas utiliser les RULES postgresql.
