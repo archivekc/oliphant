@@ -107,4 +107,6 @@ Comment distingue t'on un objet versionné ? comment recuperer sa version ? comm
 
 Comment recuperer l'entityName d'un objet et son ID ?
 
-Note: attention au triggers et au regles before update : on pourrait en avoir une autre qui changerait la requete. Donc il faut utiliser un after update. Du coup, on ne peut pas utiliser les RULES postgresql.
+attention au triggers et au regles before update : on pourrait en avoir une autre qui changerait la requete. Donc il faut utiliser un after update. Du coup, on ne peut pas utiliser les RULES postgresql.
+
+La methode hibernate getRowId sur EntityEntry peut etre interessante !
