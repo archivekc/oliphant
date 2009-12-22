@@ -18,7 +18,7 @@ public class TestVersioned
 		conn = Utils.getJDBCConnection();
 
 		Statement st = conn.createStatement();
-		st.executeUpdate("DELETE from persistentobject");
+		st.executeUpdate("DELETE from persistentversionedobject");
 		st.close();
 
 		sessionFactory = Utils.getSessionFactory();
@@ -28,7 +28,7 @@ public class TestVersioned
 		Transaction tx = session.beginTransaction();   
 		for (int i = 0; i<NB_ROWS; i++)
 			{
-			PersistentObject o = new PersistentObject();
+			PersistentVersionedObject o = new PersistentVersionedObject();
 			o.setId(i);
 			o.setChampString("valeur string");
 			o.setChampLong((long) 1);
@@ -53,11 +53,11 @@ public class TestVersioned
 		Session session = factory.getCurrentSession();
 		
 		Transaction tx = session.beginTransaction();
-		PersistentObject o = (PersistentObject) session.load(PersistentObject.class, (long) 2);
+		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, (long) 2);
 		o.setChampString("valeur 2");	
 		
 		Statement st = conn.createStatement();
-		st.executeUpdate("UPDATE persistentobject SET champstring='valeur 3' WHERE id=2");
+		st.executeUpdate("UPDATE persistentversionedobject SET champstring='valeur 3' WHERE id=2");
 		st.close();
 		
 		tx.commit();
