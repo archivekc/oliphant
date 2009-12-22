@@ -8,6 +8,8 @@ public class MagicAnnotationConfiguration extends AnnotationConfiguration
 		{
 		super();
 		NotifyListener listener = new NotifyListener();
-		this.setListener("LoadEventListener", listener);
+		this.setListener("PostLoadEventListener", listener);
+		this.setListener("PersistEventListener", listener);
+		this.setListener("FlushEntityEventListener", listener);
 		}
 	}
