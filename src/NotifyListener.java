@@ -13,6 +13,8 @@ import org.hibernate.event.*;
 
 public class NotifyListener implements LoadEventListener, PostLoadEventListener, RefreshEventListener, PersistEventListener, DirtyCheckEventListener, FlushEventListener, PreUpdateEventListener
 	{
+	private static final long serialVersionUID = 1L;
+
 	private HashMap staleUids = new HashMap(); // Map de session -> Map de UID (string identifiant table + objet) -> true ?
 					       // Selon comment se fait la comparaison des objets session, il pourra etre necessaire
 					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
@@ -88,9 +90,9 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 			{
 			if (isKnownToBeStaleInL2(object))
 				{
-				sessionFactory.evict(session.getEntityName(object), session.getIdentifier(object));
+				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
 				}
-			throw new StaleObjectStateException(object.class, object.getIdentifierProperty().get); // TODO: Should be optional for loads
+			throw new StaleObjectStateException(object.getEntityName(), session.getIdentifier(object)); // TODO: Should be optional for loads
 			}
 		return null;
 		}
@@ -139,13 +141,13 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 			{
 			Notification notif = updates.get(i);
 			if (notif.getVersion() != null) {versions.put(notif.getUid(), notif.getVersion());}
-			List<Session> sessions = sessionFactory.getSessions();
+			/*List<Session> sessions = stae;
 			for (int j=0; j<sessions.size(); j++)
 				{
 				Session session = sessions.get(j);
 				if (!staleUids.containsKey(session)) {staleUids.put(session, new HashMap());}
 				((HashMap) staleUids.get(session)).put(notif.getUid(), true);
-				}
+				}*/
 			}
 		}
  

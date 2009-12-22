@@ -1,44 +1,61 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
+	private BufferedReader br;
+	
 	public void setUp()
 		{
+		File file = new File("/var/lib/postgre/data/my_notify");
+		FileInputStream fis;
+		try
+			{
+			fis = new FileInputStream(file);
+			br = new BufferedReader(new InputStreamReader(fis));
+			}
+		catch (FileNotFoundException e)
+			{
+			e.printStackTrace();
+			}
 		}
 
-	private Map getLatestUpdates(PGConnection conn)
+	public List<Notification> getLatestUpdates()
 		{
-		List<Notifications> notifs;
+		List<Notification> notifs = new ArrayList<Notification>();
 
-		File file = new File("/var/lib/postgre/data/my_notify");
-		FileInputStream fis = new FileInputStream(file);
-		BufferedInputStream bis = new BufferedInputStream(fis);
-		DataInputStream dis = new DataInputStream(bis);
-
-		while (dis.available() != 0)
+		try
 			{
-			String line = dis.readLine();
-			System.out.println(line);
-			notifs.Add(new Notification(line.split("###")));
+			while (br.ready())
+				{
+				String line = br.readLine();
+				System.out.println(line);
+				notifs.add(new Notification(line.split("###")));
+				}
 			}
-
-		fis.close();
-		bis.close();
-		dis.close();
+		catch (IOException e)
+			{
+			e.printStackTrace();
+			}
 
 		return notifs;
 		}
-	/*
-	private Map getLatestUpdates(PGConnection conn)
-		{
-		org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
-		string[] latestUpdates;
-		if (notifications != null)
-			{
-			for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
-			}
-		}
-	*/
-
+	
 	public void tearDown()
 		{
+		try
+			{
+			br.close();
+			}
+		catch (IOException e)
+			{
+			e.printStackTrace();
+			}
 		}
 	}

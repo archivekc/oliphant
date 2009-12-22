@@ -1,5 +1,6 @@
 import javax.persistence.Id;
 import javax.persistence.Entity;
+import javax.persistence.Version;
 
 @Entity
 public class PersistentVersionnedObject {

@@ -1,11 +1,15 @@
-public class OracleNotifyListener implements DatabaseChangeListener, SpecificNotifyListener
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+public class OracleNotifyListener implements /*DatabaseChangeListener, */SpecificNotifyListener
 	{
 	public void setUp()
 		{
-		Properties prop = new Properties();
+		/*Properties prop = new Properties();
 		prop.setProperty(OracleConnection.DCN_NOTIFY_ROWIDS, "true");
 		prop.setProperty(OracleConnection.DCN_IGNORE_INSERTOP, "true");
-		prop.setProperty(OracleConnection.DCN_NOTIFY_CHANGELAG, 0);
+		prop.setProperty(OracleConnection.DCN_NOTIFY_CHANGELAG, 0);*/
 
 		/* DCN_IGNORE_DELETEOP
 			If set to true, DELETE operations will not generate any database change event.
@@ -32,14 +36,19 @@ public class OracleNotifyListener implements DatabaseChangeListener, SpecificNot
 		NTF_TIMEOUT
 			Specifies the time in seconds after which the registration will be automatically expunged by the database. */
 
-		DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
+		/*DatabaseChangeRegistration dcr = conn.registerDatabaseChangeNotification(prop);
 		DCNDemoListener listener = new DCNDemoListener();
-		dcr.addListener(listener);
+		dcr.addListener(listener);*/
 		}
 
-	public void onDatabaseChangeNotification(DatabaseChangeEvent e)
+	/*public void onDatabaseChangeNotification(DatabaseChangeEvent e)
 		{
 		System.out.println(e.toString());
+		}*/
+	
+	public List<Notification> getLatestUpdates()
+		{
+		return new ArrayList<Notification>();
 		}
 
 	public void tearDown()
