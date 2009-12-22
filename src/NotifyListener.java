@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SessionFactory;
+import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.Session;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
 
@@ -20,14 +21,27 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
 					       // qui verifie juste si on a affaire a la meme instance de session
 	private HashMap versions = new HashMap(); // Map de UID -> derniere version connue
-	private SessionFactory sessionFactory;
+	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
 
 	public Serializable ProcessLoadEvent(AbstractEvent event, boolean throwStaleException) throws StaleObjectStateException
 		{
-		if (sessionFactory == null) {sessionFactory = event.getSession().getSessionFactory();} // our first event, initialize the sessionFactory
-		// il est peut etre deja stale. on regarde si dans versions on a cet objet et si c'est le cas on compare a notre version, sinon on considère comme clean (pas moyen de savoir). Si version correcte on retire de staleIds de cette session. Si version ancienne, on staleobjectstateexception, et on garde le staleId. Si pas de version connue, on garde la version comme plus recente connue.
-		// Cas pas de versionnage : on retire l'objet des dirtyIds de cette session. On a pas de moyen de savoir si il est stale.
+		if (sessionFactory == null) {sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();} // our first event, initialize the sessionFactory
+		PersistentClass object = (PersistentClass) ((LoadEvent) event).getInstanceToLoad();
+	 	EntityPersister persister = sessionFactory.getEntityPersister(object.getEntityName());
+		String uid = getUid(object);
+		if (persister.isVersioned())
+			{
+			if (!versions.containsKey(uid))
+				{
+				// We have not yet received notifications for this object
+				versions.put(uid, object.getVersion());
+				}
+			}
+		else
+			{
+			// no versionning, we have to remove the uid from dirtyUids for this session (no way of knowing if stale)
+			}
 		return true;
 		}
 
@@ -103,7 +117,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 		// TODO : check cache, maybe do it in a separate cache manager ?
 		/*
 	 	EntityPersister persister = sessionFactory.getEntityPersister(entityName);
-		if (persister.isVersionned())
+		if (persister.isVersioned())
 			{
 			object.getVersion()
 			sessionFactory.
@@ -119,17 +133,17 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 
 	public boolean isKnownToBeStaleInSession(PersistentClass object, Session session)
 		{
-		String objectUid = uid(object);
+		String uid = getUid(object);
 		updateStaleUidsAndVersions();
-		//if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(objectUid))) {return true;}
-		if (versions.containsKey(objectUid))
+		//if ((staleIds.containsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
+		if (versions.containsKey(uid))
 			{
-			if (!object.getVersion().equals(versions.get(objectUid))) {return true;}
+			if (!object.getVersion().equals(versions.get(uid))) {return true;}
 			}
 		return false;
 		}
 
-	private String uid(PersistentClass object) // Unique Identifier for the object, used in database notifications
+	private String getUid(PersistentClass object) // Unique Identifier for the object, used in database notifications
 		{
 		return object.getClass()+"#"+object.getKey();
 		}
