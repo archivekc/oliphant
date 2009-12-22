@@ -16,14 +16,14 @@ public class Test1 {
 		conn = Utils.getJDBCConnection();
 
 		Statement st = conn.createStatement();
-		st.executeUpdate("DELETE from objetpersistent");
+		st.executeUpdate("DELETE from persistentobject");
 		st.close();
 
 		sessionFactory = Utils.getSessionFactory();
 		Session session = sessionFactory.getCurrentSession();
 		Transaction tx = session.beginTransaction();   
 		for (int i = 0; i<NB_ROWS; i++) {
-			ObjetPersistent o = new ObjetPersistent();
+			PersistentObject o = new PersistentObject();
 			o.setId(i);
 			o.setChampString("valeur string");
 			o.setChampLong((long) 1);
@@ -44,7 +44,7 @@ public class Test1 {
 		Session session = sessionFactory.getCurrentSession();
 		
 		Transaction tx = session.beginTransaction();
-		ObjetPersistent o = (ObjetPersistent) session.load(ObjetPersistent.class, (long) 1);
+		PersistentObject o = (PersistentObject) session.load(PersistentObject.class, (long) 1);
 		o.setChampString("valeur 1");
 		tx.commit();
 
@@ -57,11 +57,11 @@ public class Test1 {
 		Session session = sessionFactory.getCurrentSession();
 		
 		Transaction tx = session.beginTransaction();
-		ObjetPersistent o = (ObjetPersistent) session.load(ObjetPersistent.class, (long) 2);
+		PersistentObject o = (PersistentObject) session.load(PersistentObject.class, (long) 2);
 		o.setChampString("valeur 2");	
 		
 		Statement st = conn.createStatement();
-		st.executeUpdate("UPDATE objetpersistent SET champstring='valeur 3' WHERE id=2");
+		st.executeUpdate("UPDATE persistentobject SET champstring='valeur 3' WHERE id=2");
 		st.close();
 		
 		tx.commit();

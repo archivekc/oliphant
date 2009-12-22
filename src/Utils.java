@@ -33,7 +33,7 @@ public class Utils {
 
 			config.setProperty("hibernate.select_before_update", "true");
 
-			config.addAnnotatedClass(ObjetPersistent.class);
+			config.addAnnotatedClass(PersistentObject.class);
 			sessionFactory = config.buildSessionFactory();
 		} catch (Throwable ex) {
 			System.err.println("Initial SessionFactory creation failed." + ex);

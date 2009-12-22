@@ -2,7 +2,7 @@ import javax.persistence.Id;
 import javax.persistence.Entity;
 
 @Entity
-public class ObjetPersistent {
+public class PersistentObject {
 
 	private long id;
 	private String champString;
