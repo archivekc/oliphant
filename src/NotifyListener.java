@@ -118,9 +118,7 @@ public class NotifyListener extends EventListener
 		//if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
 		if (versions.ContainsKey(uid))
 			{
-			Field[] fields = object.getDeclaredFields();
-			version = Versioning.getVersion(Object[] fields, persister) // Extract the optimistic locking value out of the entity state snapshot.
-			&& (!versions.get(uid).equals(object.get...)) {return true;}
+			if (!object.getVersion().equals(versions.get(uid))) {return true;}
 			}
 		return false;
 		}
