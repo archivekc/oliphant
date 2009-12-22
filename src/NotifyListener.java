@@ -1,6 +1,6 @@
 import java.util.HashMap;
 
-public class NotifyFlushEventListener extends EventListener
+public class NotifyListener extends EventListener
 	{
 	// Events supported by hibernate :
 	// AutoFlushEventListener 	Defines the contract for handling of session auto-flush events.
@@ -34,6 +34,7 @@ public class NotifyFlushEventListener extends EventListener
 	private Map versions = new HashMap(); // Map de UID -> derniere version connue
 	private Stack notificationQueue;
 	private SessionFactory sessionFactory;
+	private SpecificNotifyListener specificNotifyListener;
 
 	public Serializable ProcessLoadEvent(Event event, boolean throwStaleException) throws HibernateException
 		{
@@ -122,7 +123,7 @@ public class NotifyFlushEventListener extends EventListener
 
 	private void updateStaleUidsAndVersions()
 		{
-		// TODO: for implementations in which notifications update is synchronous, call it here
+		specificNotifyListener.getLatestUpdates();
 		while (!notificationQueue.empty())
 			{
 			Notofication notif = notificationQueue.pop();
@@ -233,10 +234,15 @@ public class MagicAnnotationConfiguration extends AnnotationConfiguration
 		}
 	}
 
+public interface SpecificNotifyListener
+	{
+
+	}
+
 /************************************
  ***            Oracle            ***
  ************************************/
-public class OracleNotifyListener implements DatabaseChangeListener
+public class OracleNotifyListener implements DatabaseChangeListener, SpecificNotifyListener
 	{
 	public void setUp()
 		{
@@ -284,7 +290,7 @@ public class OracleNotifyListener implements DatabaseChangeListener
 /************************************
  ***            PostgreSQL        ***
  ************************************/
-private Map getLatestUpdates(Session session, PGConnection conn)
+private Class PostgreSQLNotifyListener() implements SpecificNotifyListener
 	{
 	org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
 	string[] latestUpdates;
