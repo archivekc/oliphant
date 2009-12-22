@@ -78,12 +78,12 @@ public class NotifyFlushEventListener extends EventListener
 		{
 		Object object = event.getObject();
 		Session session = event.getSession();
-		updateStaleUidsAndVersions(session.getSessionFactory());
+		updateStaleUidsAndVersions();
 		if (isKnownToBeStaleInSession(object, session))
 			{
 			if (isKnownToBeStaleInL2(object))
 				{
-				session.getSessionFactory().evict(session.getEntityName(object), session.getIdentifier(object));
+				sessionFactory.evict(session.getEntityName(object), session.getIdentifier(object));
 				}
 			throw new StaleObjectStateException(object.class, id); // TODO: Should be optional for loads
 			}
@@ -92,8 +92,7 @@ public class NotifyFlushEventListener extends EventListener
 
 	public boolean isKnownToBeStaleInL2(Object object)
 		{
-		factory = ?;
-	 	EntityPersister persister = factory.getEntityPersister(entityName);
+	 	EntityPersister persister = sessionFactory.getEntityPersister(entityName);
 		if (persister.isVersionned())
 			{
 			Field[] fields = object.getDeclaredFields();
@@ -120,14 +119,14 @@ public class NotifyFlushEventListener extends EventListener
 		{
 		}
 
-	private void updateStaleUidsAndVersions(MagicSessionFactory sessionFactory)
+	private void updateStaleUidsAndVersions()
 		{
 		// TODO: for implementations in which notifications update is synchronous, call it here
 		while (!notificationQueue.empty())
 			{
 			Notofication notif = notificationQueue.pop();
 			if (notif.getVersion()) {versions.put(notif.getUid(), Notif.getVersion());}
-			List<Session> sessions = sessionFactory.getSessions())
+			List<Session> sessions = sessionFactory.getSessions();
 			for (int i=0; i<sessions.length(); i++)
 				{
 				Session session = sessions[i];
