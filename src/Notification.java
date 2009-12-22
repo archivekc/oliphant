@@ -1,20 +1,20 @@
 public class Notification
 	{
-	private Long version;
+	private String version;
 	private String uid;
 
 	public Notification(String[] infos)
 		{
 		uid = infos[0];
-		version = new Long(infos[1]);
+		version = infos[1];
 		}
 	
-	public Long getVersion()
+	public String getVersion()
 		{
 		return version;
 		}
 
-	public void setVersion(long v)
+	public void setVersion(String v)
 		{
 		version = v;
 		}

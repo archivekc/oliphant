@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.Session;
 import org.hibernate.mapping.PersistentClass;
+import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
@@ -35,7 +37,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 			if (!versions.containsKey(uid))
 				{
 				// We have not yet received notifications for this object
-				versions.put(uid, object.getVersion());
+				versions.put(uid, persister.getVersion(object, EntityMode.POJO).toString());
 				}
 			}
 		else
@@ -118,7 +120,8 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 
 	private String getUid(PersistentClass object) // Unique Identifier for the object, used in database notifications
 		{
-		return object.getClass()+"#"+object.getKey();
+		ClassMetadata metadata = sessionFactory.getClassMetadata(object.getClass());
+		return object.getClass()+"#"+metadata.getPropertyValue(object, metadata.getIdentifierPropertyName(), EntityMode.POJO);
 		}
 
 	private void updateStaleUidsAndVersions()

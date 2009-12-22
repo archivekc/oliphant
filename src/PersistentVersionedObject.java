@@ -3,7 +3,7 @@ import javax.persistence.Entity;
 import javax.persistence.Version;
 
 @Entity
-public class PersistentVersionnedObject {
+public class PersistentVersionedObject {
 
 	private long id;
 	private long version;
