@@ -146,6 +146,12 @@ public class Notification
 	private long Version;
 	private String uid;
 
+	public Notification(String[] infos)
+		{
+		uid = infos[0];
+		version = infos[1];
+		}
+	
 	public long getVersion()
 		{
 		return version;
