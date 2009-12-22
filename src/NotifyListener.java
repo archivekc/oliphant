@@ -16,11 +16,11 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	{
 	private static final long serialVersionUID = 1L;
 
-	private HashMap staleUids = new HashMap(); // Map de session -> Map de UID (string identifiant table + objet) -> true ?
+	/*private HashMap staleUids = new HashMap(); // Map de session -> Map de UID (string identifiant table + objet) -> true ?
 					       // Selon comment se fait la comparaison des objets session, il pourra etre necessaire
 					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
-					       // qui verifie juste si on a affaire a la meme instance de session
-	private HashMap versions = new HashMap(); // Map de UID -> derniere version connue
+					       // qui verifie juste si on a affaire a la meme instance de session*/
+	private HashMap<String,String> versions = new HashMap<String,String>(); // Maps object UIDs to latest known versions
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
 
