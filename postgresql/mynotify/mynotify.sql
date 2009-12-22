@@ -7,14 +7,14 @@ CREATE OR REPLACE FUNCTION my_notify(s TEXT) RETURNS int AS
 	END
 	$$ LANGUAGE 'plpgsql';
 
-CREATE TRIGGER notify_PersistentVersionnedObject
+CREATE TRIGGER PersistentVersionnedObject_update_trigger
         AFTER DELETE OR UPDATE ON objet_persistent
         FOR EACH ROW EXECUTE PROCEDURE notification()
 
-CREATE OR REPLACE FUNCTION notification() RETURNS OPAQUE AS
+CREATE OR REPLACE FUNCTION PersistentVersionnedObject_notification() RETURNS OPAQUE AS
 	$$
 	BEGIN
-		SELECT my_notify('PersistentVersionnedObject###' || NEW.ID);
+		SELECT my_notify('PersistentVersionnedObject###' || NEW.ID || '###' || NEW.VERSION);
 	END;
 	$$ LANGUAGE 'plpgsql';
 
