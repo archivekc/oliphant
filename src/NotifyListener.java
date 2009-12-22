@@ -12,7 +12,7 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
 
-public class NotifyListener implements LoadEventListener, PostLoadEventListener, RefreshEventListener, PersistEventListener, DirtyCheckEventListener, FlushEventListener, PreUpdateEventListener
+public class NotifyListener implements LoadEventListener, PostLoadEventListener, PersistEventListener, FlushEntityEventListener
 	{
 	private static final long serialVersionUID = 1L;
 
@@ -24,10 +24,10 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
 
-	public Serializable ProcessLoadEvent(AbstractEvent event, boolean throwStaleException) throws StaleObjectStateException
+	public Serializable ProcessLoadEvent(PostLoadEvent event, boolean throwStaleException) throws StaleObjectStateException
 		{
 		if (sessionFactory == null) {sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();} // our first event, initialize the sessionFactory
-		PersistentClass object = (PersistentClass) ((LoadEvent) event).getInstanceToLoad();
+		PersistentClass object = (PersistentClass) event.getEntity();
 	 	EntityPersister persister = sessionFactory.getEntityPersister(object.getEntityName());
 		String uid = getUid(object);
 		if (persister.isVersioned())
@@ -48,57 +48,30 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
 		ProcessLoadEvent(event, true);
-		processEvent(event);
+		checkObject((PersistentClass) event.getEntity(), event.getSession());
 		}
 	
 	public void onLoad(LoadEvent event, LoadType type) throws StaleObjectStateException
 		{
-		ProcessLoadEvent(event, true);
-		processEvent(event);
 		}
 	
-	public void onRefresh(RefreshEvent event, Map map) throws StaleObjectStateException
-		{
-		ProcessLoadEvent(event, true);
-		processEvent(event);
-		}
-
-	public void onRefresh(RefreshEvent event) throws StaleObjectStateException
-		{
-		ProcessLoadEvent(event, true);
-		processEvent(event);
-		}
-
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException
 		{
-		processEvent(event);
+		checkObject((PersistentClass) event.getObject(), event.getSession());
 		}
 
 	public void onPersist(PersistEvent event) throws StaleObjectStateException
 		{
-		processEvent(event);
+		checkObject((PersistentClass) event.getObject(), event.getSession());
 		}
 	
-	public void onDirtyCheck(DirtyCheckEvent event) throws StaleObjectStateException
+	public void onFlushEntity(FlushEntityEvent event) throws StaleObjectStateException
 		{
-		processEvent(event);
+		checkObject((PersistentClass) event.getEntity(), event.getSession());
 		}
 
-	public void onFlush(FlushEvent event) throws StaleObjectStateException
+	public Serializable checkObject(PersistentClass object, Session session) throws StaleObjectStateException
 		{
-		processEvent(event);
-		}
-
-	public boolean onPreUpdate(PreUpdateEvent event) throws StaleObjectStateException
-		{
-		processEvent(event);
-		return true;
-		}
-
-	public Serializable processEvent(AbstractEvent event) throws StaleObjectStateException
-		{
-		PersistentClass object = (PersistentClass) ((RefreshEvent) event).getObject();
-		Session session = event.getSession();
 		updateStaleUidsAndVersions();
 		if (isKnownToBeStaleInSession(object, session))
 			{
