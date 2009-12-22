@@ -292,6 +292,10 @@ public class OracleNotifyListener implements DatabaseChangeListener, SpecificNot
 		{
 		System.out.println(e.toString());
 		}
+
+	public void tearDown()
+		{
+		}
 	}
 
 /************************************
@@ -299,6 +303,10 @@ public class OracleNotifyListener implements DatabaseChangeListener, SpecificNot
  ************************************/
 private Class PostgreSQLNotifyListener() implements SpecificNotifyListener
 	{
+	public void setUp()
+		{
+		}
+
 	private Map getLatestUpdates(PGConnection conn)
 		{
 		List<Notifications> notifs;
@@ -332,4 +340,8 @@ private Class PostgreSQLNotifyListener() implements SpecificNotifyListener
 			}
 		}
 	*/
+
+	public void tearDown()
+		{
+		}
 	}
