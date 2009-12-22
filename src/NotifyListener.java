@@ -115,8 +115,9 @@ public class NotifyFlushEventListener extends EventListener
 		return false;
 		}
 
-	private string uid(Object object) // Unique Identifier pour l'objet, qui est aussi utilisé dans les notifications du SGBD. Pourrait etre simplement <nom table><separateur><pk> mais il peut etre necessaire pour faire face a des restrictions par exemple du NOTIFY d'utiliser un SHA1 ou autre.
+	private string uid(Object object) // Unique Identifier for the object, used in database notifications
 		{
+		return object.class."###".object.getId();
 		}
 
 	private void updateStaleUidsAndVersions()
