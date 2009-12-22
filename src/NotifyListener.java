@@ -33,9 +33,11 @@ public class NotifyFlushEventListener extends EventListener
 					       // qui verifie juste si on a affaire a la meme instance de session
 	private Map versions = new HashMap(); // Map de UID -> derniere version connue
 	private Stack notificationQueue;
+	private SessionFactory sessionFactory;
 
 	public Serializable ProcessLoadEvent(Event event, boolean throwStaleException) throws HibernateException
 		{
+		if (sessionFactory == null) {sessionFactory = event.getSession().getSessionFactory();} // our first event, initialize the sessionFactory
 		// il est peut etre deja stale. on regarde si dans versions on a cet objet et si c'est le cas on compare a notre version, sinon on considère comme clean (pas moyen de savoir). Si version correcte on retire de staleIds de cette session. Si version ancienne, on staleobjectstateexception, et on garde le staleId. Si pas de version connue, on garde la version comme plus recente connue.
 		// Cas pas de versionnage : on retire l'objet des dirtyIds de cette session. On a pas de moyen de savoir si il est stale.
 		}
