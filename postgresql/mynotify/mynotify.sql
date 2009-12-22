@@ -14,7 +14,7 @@ CREATE TRIGGER PersistentVersionnedObject_update_trigger
 CREATE OR REPLACE FUNCTION PersistentVersionnedObject_notification() RETURNS OPAQUE AS
 	$$
 	BEGIN
-		SELECT my_notify('PersistentVersionnedObject###' || NEW.ID || '###' || NEW.VERSION);
+		SELECT my_notify('PersistentVersionnedObject#' || NEW.ID || '###' || NEW.VERSION);
 	END;
 	$$ LANGUAGE 'plpgsql';
 

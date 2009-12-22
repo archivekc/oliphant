@@ -124,7 +124,7 @@ public class NotifyListener extends EventListener
 
 	private string uid(Object object) // Unique Identifier for the object, used in database notifications
 		{
-		return object.class."###".object.getId();
+		return object.class."#".object.getId();
 		}
 
 	private void updateStaleUidsAndVersions()
@@ -301,7 +301,23 @@ private Class PostgreSQLNotifyListener() implements SpecificNotifyListener
 	private Map getLatestUpdates(PGConnection conn)
 		{
 		List<Notifications> notifs;
-		notifs.Add(new Notification(.split("###");
+
+		File file = new File("/var/lib/postgre/data/my_notify");
+		FileInputStream fis = new FileInputStream(file);
+		BufferedInputStream bis = new BufferedInputStream(fis);
+		DataInputStream dis = new DataInputStream(bis);
+
+		while (dis.available() != 0)
+			{
+			String line = dis.readLine();
+			System.out.println(line);
+			notifs.Add(new Notification(line.split("###"));
+			}
+
+		fis.close();
+		bis.close();
+		dis.close();
+
 		return notifs;
 		}
 	/*
