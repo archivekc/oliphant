@@ -44,6 +44,20 @@ public class TestVersioned
 		tx.commit();
 		}
 	
+	public void simpleUpdate()
+		{
+		System.out.println("=== Simple update ===");		
+
+		Session session = sessionFactory.getCurrentSession();
+		
+		Transaction tx = session.beginTransaction();
+		PersistentVersionedObject o = (PersistentObject) session.load(PersistentVersionedObject.class, (long) 1);
+		o.setChampString("valeur 1");
+		tx.commit();
+
+		System.out.println(sessionFactory.getStatistics());		
+		}
+	
 	public void staleUpdate(boolean magic) throws SQLException
 		{
 		System.out.println("=== Stale update "+(magic ? "(magic) ": "")+"===");		
