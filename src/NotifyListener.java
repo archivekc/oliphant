@@ -92,11 +92,14 @@ public class NotifyListener extends EventListener
 
 	public boolean isKnownToBeStaleInL2(Object object)
 		{
+		return false;
+		// TODO : check cache, maybe do it in a separate cache manager ?
+		/*
 	 	EntityPersister persister = sessionFactory.getEntityPersister(entityName);
 		if (persister.isVersionned())
 			{
-			Field[] fields = object.getDeclaredFields();
-			Versioning.getVersion(Object[] fields, persister) // Extract the optimistic locking value out of the entity state snapshot.
+			object.getVersion()
+			sessionFactory.
 			// comparer version L2 et derniere version connue. Comment recuperer version L2 ?
 			}
 		else
@@ -104,6 +107,7 @@ public class NotifyListener extends EventListener
 			// We can't know what version is in L2, so we can't know if it's stale
 			return false;
 			}
+		*/
 		}
 
 	public boolean isKnownToBeStaleInSession(Object object, Session session)
