@@ -2,9 +2,10 @@ import javax.persistence.Id;
 import javax.persistence.Entity;
 
 @Entity
-public class PersistentObject {
+public class PersistentVersionnedObject {
 
 	private long id;
+	private long version;
 	private String champString;
 	private Long champLong;
 	
@@ -14,6 +15,13 @@ public class PersistentObject {
 	}
 	public void setId(long id) {
 		this.id = id;
+	}
+	@Version
+	public long getVersion() {
+		return version;
+	}
+	public void setVersion(long version) {
+		this.version = version;
 	}
 	public String getChampString() {
 		return champString;
