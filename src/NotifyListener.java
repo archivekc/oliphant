@@ -32,7 +32,6 @@ public class NotifyListener extends EventListener
 					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
 					       // qui verifie juste si on a affaire a la meme instance de session
 	private Map versions = new HashMap(); // Map de UID -> derniere version connue
-	private Stack notificationQueue;
 	private SessionFactory sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
 
@@ -129,15 +128,15 @@ public class NotifyListener extends EventListener
 
 	private void updateStaleUidsAndVersions()
 		{
-		specificNotifyListener.getLatestUpdates();
-		while (!notificationQueue.empty())
+		List<Notification> updates = specificNotifyListener.getLatestUpdates();
+		for (int i=0; i<updates.length(); i++)
 			{
-			Notofication notif = notificationQueue.pop();
+			Notofication notif = updates[i];
 			if (notif.getVersion()) {versions.put(notif.getUid(), Notif.getVersion());}
 			List<Session> sessions = sessionFactory.getSessions();
-			for (int i=0; i<sessions.length(); i++)
+			for (int j=0; j<sessions.length(); j++)
 				{
-				Session session = sessions[i];
+				Session session = sessions[j];
 				if (!staleUids.ContainsKey(session)) {staleUids.put(session, new HashMap());}
 				staleUids.get(session).put(uid, notif.getUid());
 				}
