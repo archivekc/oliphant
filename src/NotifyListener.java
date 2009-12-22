@@ -110,9 +110,15 @@ public class NotifyListener extends EventListener
 	public boolean isKnownToBeStaleInSession(Object object, Session session)
 		{
 		String uid = uid(object);
-		updateStaleUidsAndVersions(session.getSessionFactory());
-		if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
-		//if ((versions.ContainsKey(uid)) && (!versions.get(uid).equals(object.get...)) {return true;} // TODO: versionned entities
+		updateStaleUidsAndVersions();
+	 	EntityPersister persister = sessionFactory.getEntityPersister(entityName);
+		//if ((staleIds.ContainsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
+		if (versions.ContainsKey(uid))
+			{
+			Field[] fields = object.getDeclaredFields();
+			version = Versioning.getVersion(Object[] fields, persister) // Extract the optimistic locking value out of the entity state snapshot.
+			&& (!versions.get(uid).equals(object.get...)) {return true;}
+			}
 		return false;
 		}
 
@@ -292,10 +298,21 @@ public class OracleNotifyListener implements DatabaseChangeListener, SpecificNot
  ************************************/
 private Class PostgreSQLNotifyListener() implements SpecificNotifyListener
 	{
-	org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
-	string[] latestUpdates;
-	if (notifications != null)
+	private Map getLatestUpdates(PGConnection conn)
 		{
-		for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
+		List<Notifications> notifs;
+		notifs.Add(new Notification(.split("###");
+		return notifs;
 		}
+	/*
+	private Map getLatestUpdates(PGConnection conn)
+		{
+		org.postgresql.PGNotification notifications[] = pgconn.getNotifications();
+		string[] latestUpdates;
+		if (notifications != null)
+			{
+			for (int i=0; i<notifications.length; i++) {latestUpdates.add(notifications[i].getPayload());}
+			}
+		}
+	*/
 	}
