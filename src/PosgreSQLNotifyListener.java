@@ -35,7 +35,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 			while (br.ready())
 				{
 				String line = br.readLine();
-				System.out.println(line);
+				System.out.println("Notif from PostgreSQL : "+line);
 				notifs.add(new Notification(line.split("###")));
 				}
 			}
