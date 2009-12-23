@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +12,18 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
 	private BufferedReader br;
 	
+	
 	public void setUp()
-		{
+		{       
+		try {
+			RandomAccessFile rand = new RandomAccessFile("/var/lib/postgres/my_notify","rw");
+			rand.setLength(0);
+			rand.close();
+			}
+		catch (Exception e)
+			{
+			e.printStackTrace();
+			}
 		File file = new File("/var/lib/postgres/my_notify");
 		FileInputStream fis;
 		try
