@@ -1,4 +1,6 @@
 import org.hibernate.cfg.AnnotationConfiguration;
+import org.hibernate.event.FlushEntityEventListener;
+import org.hibernate.event.PostLoadEventListener;
 import org.hibernate.event.def.DefaultFlushEntityEventListener;
 import org.hibernate.event.def.DefaultPostLoadEventListener;
 
@@ -10,14 +12,14 @@ public class MagicAnnotationConfiguration extends AnnotationConfiguration
 		{
 		super();
 		NotifyListener listener = new NotifyListener();
-		Object[] postLoadListeners = new Object[2];
+		PostLoadEventListener[] postLoadListeners = new PostLoadEventListener[2];
 		postLoadListeners[0] = listener;
 		postLoadListeners[1] = new DefaultPostLoadEventListener();
 		this.setListeners("post-load", postLoadListeners);
 		/*this.setListener("persist", listener);*/
-		Object[] flushEntityListeners = new Object[2];
+		FlushEntityEventListener[] flushEntityListeners = new FlushEntityEventListener[2];
 		flushEntityListeners[0] = listener;
 		flushEntityListeners[1] = new DefaultFlushEntityEventListener();
-		this.setListener("flush-entity", flushEntityListeners);
+		this.setListeners("flush-entity", flushEntityListeners);
 		}
 	}
