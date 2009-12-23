@@ -32,16 +32,6 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 			{
 			// our first event, initialize the listener
 			sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
-			String classe = event.getSession().connection().getClass().getName();
-			if (classe.equals("PGConnection"))
-				{
-				specificNotifyListener = new PostgreSQLNotifyListener(); 
-				}
-			else if (classe.equals("OracleConnection"))
-				{
-				specificNotifyListener = new OracleNotifyListener();
-				}
-			specificNotifyListener.setUp();
 			}
 		PersistentClass object = (PersistentClass) event.getEntity();
 	 	EntityPersister persister = sessionFactory.getEntityPersister(object.getEntityName());
@@ -158,5 +148,11 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	private void garbageCollector()
 		{
 		// TODO: remove the keys of closed sessions from the staleUids Map
+		}
+
+	public void setSpecificListener(SpecificNotifyListener specList)
+		{
+		specificNotifyListener = specList;
+		specificNotifyListener.setUp();
 		}
 	}
