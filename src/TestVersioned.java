@@ -73,10 +73,18 @@ public class TestVersioned
 		o.setChampString("valeur 2");	
 		
 		Statement st = conn.createStatement();
-		st.executeUpdate("UPDATE persistentversionedobject SET version=22 WHERE id=2");
+		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id=2");
 		st.close();
 		
-		tx.commit();
+		try
+			{
+			tx.commit();
+			}
+		catch (Exception e)
+			{
+			System.out.println(e);
+			System.out.println("  in "+e.getStackTrace()[0]);
+			}
 
 		System.out.println(factory.getStatistics());		
 		}

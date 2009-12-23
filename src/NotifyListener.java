@@ -79,14 +79,17 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	public Serializable checkObject(Object object, EventSource session, String entityName) throws StaleObjectStateException
 		{
 		updateStaleUidsAndVersions();
+		System.out.println("* Checking object");
 		if (isKnownToBeStaleInSession(object, session))
 			{
+			System.out.println("* Object is stale in session");
 			if (isKnownToBeStaleInL2(object))
 				{
 				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
 				}
 			throw new StaleObjectStateException(entityName, session.getIdentifier(object)); // TODO: Should be optional for loads
 			}
+		System.out.println("* Object is not verifiably stale");
 		return null;
 		}
 
