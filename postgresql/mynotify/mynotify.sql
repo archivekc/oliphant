@@ -8,8 +8,8 @@ CREATE OR REPLACE FUNCTION my_notify(s TEXT) RETURNS int AS
 	$$ LANGUAGE 'plpgsql';
 
 CREATE TRIGGER PersistentVersionnedObject_update_trigger
-        AFTER DELETE OR UPDATE ON objet_persistent
-        FOR EACH ROW EXECUTE PROCEDURE notification()
+        AFTER DELETE OR UPDATE ON persistentversionedobject
+        FOR EACH ROW EXECUTE PROCEDURE PersistentVersionnedObject_notification();
 
 CREATE OR REPLACE FUNCTION PersistentVersionnedObject_notification() RETURNS OPAQUE AS
 	$$
