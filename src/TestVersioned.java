@@ -51,7 +51,7 @@ public class TestVersioned
 		Session session = sessionFactory.getCurrentSession();
 		
 		Transaction tx = session.beginTransaction();
-		PersistentVersionedObject o = (PersistentObject) session.load(PersistentVersionedObject.class, (long) 1);
+		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, (long) 1);
 		o.setChampString("valeur 1");
 		tx.commit();
 

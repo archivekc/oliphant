@@ -28,7 +28,21 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 
 	public Serializable ProcessLoadEvent(PostLoadEvent event, boolean throwStaleException) throws StaleObjectStateException
 		{
-		if (sessionFactory == null) {sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();} // our first event, initialize the sessionFactory
+		if (sessionFactory == null)
+			{
+			// our first event, initialize the listener
+			sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
+			String classe = event.getSession().connection().getClass().getName();
+			if (classe.equals("PGConnection"))
+				{
+				specificNotifyListener = new PostgreSQLNotifyListener(); 
+				}
+			else if (classe.equals("OracleConnection"))
+				{
+				specificNotifyListener = new OracleNotifyListener();
+				}
+			specificNotifyListener.setUp();
+			}
 		PersistentClass object = (PersistentClass) event.getEntity();
 	 	EntityPersister persister = sessionFactory.getEntityPersister(object.getEntityName());
 		String uid = getUid(object);
