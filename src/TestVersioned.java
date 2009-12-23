@@ -73,7 +73,7 @@ public class TestVersioned
 		o.setChampString("valeur 2");	
 		
 		Statement st = conn.createStatement();
-		st.executeUpdate("UPDATE persistentversionedobject SET champstring='valeur 3' WHERE id=2");
+		st.executeUpdate("UPDATE persistentversionedobject SET version=22 WHERE id=2");
 		st.close();
 		
 		tx.commit();
