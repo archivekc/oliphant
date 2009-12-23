@@ -13,7 +13,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 	
 	public void setUp()
 		{
-		File file = new File("/var/lib/postgre/data/my_notify");
+		File file = new File("/var/lib/postgres/my_notify");
 		FileInputStream fis;
 		try
 			{

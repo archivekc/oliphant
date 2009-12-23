@@ -33,15 +33,15 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 			// our first event, initialize the listener
 			sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
 			}
-		PersistentClass object = (PersistentClass) event.getEntity();
-	 	EntityPersister persister = sessionFactory.getEntityPersister(object.getEntityName());
+		Object object = event.getEntity();
+		EntityPersister persister = event.getPersister();
 		String uid = getUid(object);
 		if (persister.isVersioned())
 			{
 			if (!versions.containsKey(uid))
 				{
 				// We have not yet received notifications for this object
-				versions.put(uid, persister.getVersion(object, EntityMode.POJO).toString());
+				versions.put(uid, persister.getVersion(object, event.getSession().getEntityMode()).toString());
 				}
 			}
 		else
@@ -54,7 +54,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
 		ProcessLoadEvent(event, true);
-		checkObject((PersistentClass) event.getEntity(), event.getSession());
+		checkObject(event.getEntity(), event.getSession(), event.getPersister().getEntityName());
 		}
 	
 	public void onLoad(LoadEvent event, LoadType type) throws StaleObjectStateException
@@ -63,20 +63,20 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException
 		{
-		checkObject((PersistentClass) event.getObject(), event.getSession());
+		checkObject(event.getObject(), event.getSession(), event.getEntityName());
 		}
 
 	public void onPersist(PersistEvent event) throws StaleObjectStateException
 		{
-		checkObject((PersistentClass) event.getObject(), event.getSession());
+		checkObject(event.getObject(), event.getSession(), event.getEntityName());
 		}
 	
 	public void onFlushEntity(FlushEntityEvent event) throws StaleObjectStateException
 		{
-		checkObject((PersistentClass) event.getEntity(), event.getSession());
+		checkObject(event.getEntity(), event.getSession(), event.getEntityEntry().getEntityName());
 		}
 
-	public Serializable checkObject(PersistentClass object, Session session) throws StaleObjectStateException
+	public Serializable checkObject(Object object, EventSource session, String entityName) throws StaleObjectStateException
 		{
 		updateStaleUidsAndVersions();
 		if (isKnownToBeStaleInSession(object, session))
@@ -85,12 +85,12 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 				{
 				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
 				}
-			throw new StaleObjectStateException(object.getEntityName(), session.getIdentifier(object)); // TODO: Should be optional for loads
+			throw new StaleObjectStateException(entityName, session.getIdentifier(object)); // TODO: Should be optional for loads
 			}
 		return null;
 		}
 
-	public boolean isKnownToBeStaleInL2(PersistentClass object)
+	public boolean isKnownToBeStaleInL2(Object object)
 		{
 		return false;
 		// TODO : check cache, maybe do it in a separate cache manager ?
@@ -110,22 +110,24 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 		*/
 		}
 
-	public boolean isKnownToBeStaleInSession(PersistentClass object, Session session)
+	public boolean isKnownToBeStaleInSession(Object object, EventSource session)
 		{
 		String uid = getUid(object);
 		updateStaleUidsAndVersions();
 		//if ((staleIds.containsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
 		if (versions.containsKey(uid))
 			{
-			if (!object.getVersion().equals(versions.get(uid))) {return true;}
+			EntityPersister persister = session.getEntityPersister(session.getEntityName(object), object);
+			String version = persister.getVersion(object, session.getEntityMode()).toString();
+			if (!version.equals(versions.get(uid))) {return true;}
 			}
 		return false;
 		}
 
-	private String getUid(PersistentClass object) // Unique Identifier for the object, used in database notifications
+	private String getUid(Object object) // Unique Identifier for the object, used in database notifications
 		{
-		ClassMetadata metadata = sessionFactory.getClassMetadata(object.getClass());
-		return object.getClass()+"#"+metadata.getPropertyValue(object, metadata.getIdentifierPropertyName(), EntityMode.POJO);
+		//return object.getClass()+"#"+metadata.getPropertyValue(object, metadata.getIdentifierPropertyName(), EntityMode.POJO);
+		return object.getClass()+"#"+((PersistentVersionedObject) object).getId();
 		}
 
 	private void updateStaleUidsAndVersions()

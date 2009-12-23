@@ -17,9 +17,9 @@ public class TestVersioned
 		{
 		conn = Utils.getJDBCConnection();
 
-		Statement st = conn.createStatement();
+		/*Statement st = conn.createStatement();
 		st.executeUpdate("DELETE from persistentversionedobject");
-		st.close();
+		st.close();*/
 
 		sessionFactory = Utils.getSessionFactory();
 		magicSessionFactory = Utils.getMagicSessionFactory();

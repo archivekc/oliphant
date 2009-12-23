@@ -6,7 +6,7 @@ PG_MODULE_MAGIC;
 
 int notify(char *notif)
 	{
-	int fp = open("/var/lib/postgres/data/my_notify", O_RDWR | O_APPEND);
+	int fp = open("/var/lib/postgres/my_notify", O_RDWR | O_APPEND);
 
 	if(fp < 0)
 		{
