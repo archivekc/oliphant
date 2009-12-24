@@ -9,7 +9,7 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
 
-public class NotifyListener implements LoadEventListener, PostLoadEventListener, PersistEventListener, FlushEntityEventListener, PreUpdateEventListener
+public class NotifyListener implements PostLoadEventListener, PersistEventListener, FlushEntityEventListener, PreUpdateEventListener
 	{
 	private static final long serialVersionUID = 1L;
 
@@ -52,10 +52,6 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 		System.out.println("Hibernate: Post load event");
 		ProcessLoadEvent(event, true);
 		checkObject(event.getEntity(), event.getSession());
-		}
-	
-	public void onLoad(LoadEvent event, LoadType type) throws StaleObjectStateException
-		{
 		}
 	
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException

@@ -17,6 +17,7 @@ public class MagicAnnotationConfiguration extends AnnotationConfiguration
 		{
 		super();
 		listener = new NotifyListener();
+
 		PostLoadEventListener[] postLoadListeners = new PostLoadEventListener[2];
 		postLoadListeners[0] = listener;
 		postLoadListeners[1] = new DefaultPostLoadEventListener();
