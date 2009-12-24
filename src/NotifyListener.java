@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
@@ -86,7 +87,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		if (isKnownToBeStaleInSession(object, session))
 			{
 			System.out.println("Object is stale in session");
-			if (isKnownToBeStaleInL2(object))
+			if (isKnownToBeStaleInL2(object, session))
 				{
 				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
 				}
@@ -96,8 +97,13 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		return null;
 		}
 
-	public boolean isKnownToBeStaleInL2(Object object)
+	public boolean isKnownToBeStaleInL2(Object object, EventSource session)
 		{
+		EntityPersister persister = sessionFactory.getEntityPersister(session.getEntityName(object));
+		EntityRegionAccessStrategy cacheAccessStrategy = persister.getCacheAccessStrategy();
+		if (cacheAccessStrategy==null) {return false;}
+		Object cachedObject = cacheAccessStrategy.get(session.getIdentifier(object), 0);
+		System.out.println(cachedObject);
 		return false;
 		// TODO : check cache, maybe do it in a separate cache manager ?
 		/*
