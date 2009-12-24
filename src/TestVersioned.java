@@ -94,7 +94,7 @@ public class TestVersioned
 		
 		System.out.println("Hibernate: starting transaction");
 		Transaction tx = session.beginTransaction();
-		System.out.println("Hibernate: loading object 1");
+		System.out.println("Hibernate: loading object "+id);
 		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, id);
 		o.setChampString("valeur 2");	
 		
