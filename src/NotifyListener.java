@@ -132,11 +132,9 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 
 	private String getUid(Object object, EventSource session)
 		{
-		//return object.getClass()+"#"+metadata.getPropertyValue(object, metadata.getIdentifierPropertyName(), EntityMode.POJO);
-		Class c = object.getClass();
-		String className = c.getName();
+		String entityName = session.getEntityName(object);
 		String id = session.getIdentifier(object).toString();
-		return className+"#"+id;
+		return entityName+"#"+id;
 		}
 
 	private void updateStaleUidsAndVersions()
