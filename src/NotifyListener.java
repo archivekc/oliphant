@@ -1,5 +1,6 @@
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,14 +32,15 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 			sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
 			}
 		Object object = event.getEntity();
+		EventSource session = event.getSession();
 		EntityPersister persister = event.getPersister();
-		String uid = getUid(object);
+		String uid = getUid(object, session);
 		if (persister.isVersioned())
 			{
 			if (!versions.containsKey(uid))
 				{
 				// We have not yet received notifications for this object
-				versions.put(uid, persister.getVersion(object, event.getSession().getEntityMode()).toString());
+				versions.put(uid, persister.getVersion(object, session.getEntityMode()).toString());
 				}
 			}
 		else
@@ -116,7 +118,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 
 	public boolean isKnownToBeStaleInSession(Object object, EventSource session)
 		{
-		String uid = getUid(object);
+		String uid = getUid(object, session);
 		updateStaleUidsAndVersions();
 		//if ((staleIds.containsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
 		if (versions.containsKey(uid))
@@ -128,10 +130,13 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 		return false;
 		}
 
-	private String getUid(Object object) // Unique Identifier for the object, used in database notifications
+	private String getUid(Object object, EventSource session)
 		{
 		//return object.getClass()+"#"+metadata.getPropertyValue(object, metadata.getIdentifierPropertyName(), EntityMode.POJO);
-		return object.getClass().getName()+"#"+((PersistentVersionedObject) object).getId();
+		Class c = object.getClass();
+		String className = c.getName();
+		String id = session.getIdentifier(object).toString();
+		return className+"#"+id;
 		}
 
 	private void updateStaleUidsAndVersions()
