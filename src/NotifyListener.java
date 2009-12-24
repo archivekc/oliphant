@@ -130,7 +130,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	private String getUid(Object object) // Unique Identifier for the object, used in database notifications
 		{
 		//return object.getClass()+"#"+metadata.getPropertyValue(object, metadata.getIdentifierPropertyName(), EntityMode.POJO);
-		return object.getClass()+"#"+((PersistentVersionedObject) object).getId();
+		return object.getClass().getName()+"#"+((PersistentVersionedObject) object).getId();
 		}
 
 	private void updateStaleUidsAndVersions()
