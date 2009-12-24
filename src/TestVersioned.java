@@ -57,6 +57,34 @@ public class TestVersioned
 
 		System.out.println(sessionFactory.getStatistics());		
 		}
+
+	public void staleLoad() throws SQLException
+		{
+		Session session = sessionFactory.getCurrentSession();
+		
+		System.out.println("Hibernate: starting transaction");
+		Transaction tx = session.beginTransaction();
+		
+		Statement st = conn.createStatement();
+		System.out.println("Updating object 1 outside Hibernate");
+		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id=1");
+		st.close();
+		
+		System.out.println("Hibernate: loading object 1");
+		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, (long) 1);
+		o.setChampString("valeur 1");
+		try
+			{
+			tx.commit();
+			}
+		catch (Exception e)
+			{
+			System.out.println(e);
+			System.out.println("  in "+e.getStackTrace()[0]);
+			}
+
+		System.out.println(sessionFactory.getStatistics());		
+		}
 	
 	public void staleUpdate(long id, boolean magic) throws SQLException
 		{
@@ -64,7 +92,9 @@ public class TestVersioned
 		
 		Session session = factory.getCurrentSession();
 		
+		System.out.println("Hibernate: starting transaction");
 		Transaction tx = session.beginTransaction();
+		System.out.println("Hibernate: loading object 1");
 		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, id);
 		o.setChampString("valeur 2");	
 		
@@ -90,6 +120,8 @@ public class TestVersioned
 		test.setUp();
 		System.out.println("=== Simple update ===");
 		test.simpleUpdate();
+		System.out.println("=== Stale load ===");
+		test.staleLoad();
 		System.out.println("=== Stale update (magic) ===");
 		long magicStartTime = System.currentTimeMillis();
 		for(long i=0; i<1000; i++)
