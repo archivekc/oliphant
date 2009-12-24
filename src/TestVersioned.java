@@ -48,8 +48,6 @@ public class TestVersioned
 	
 	public void simpleUpdate()
 		{
-		System.out.println("=== Simple update ===");		
-
 		Session session = sessionFactory.getCurrentSession();
 		
 		Transaction tx = session.beginTransaction();
@@ -60,20 +58,19 @@ public class TestVersioned
 		System.out.println(sessionFactory.getStatistics());		
 		}
 	
-	public void staleUpdate(boolean magic) throws SQLException
+	public void staleUpdate(long id, boolean magic) throws SQLException
 		{
-		System.out.println("=== Stale update "+(magic ? "(magic) ": "")+"===");		
-
 		SessionFactory factory = magic ? magicSessionFactory : sessionFactory;
-
+		
 		Session session = factory.getCurrentSession();
 		
 		Transaction tx = session.beginTransaction();
-		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, (long) 2);
+		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, id);
 		o.setChampString("valeur 2");	
 		
 		Statement st = conn.createStatement();
-		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id=2");
+		System.out.println("Updating object "+id+" outside Hibernate");
+		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id="+id);
 		st.close();
 		
 		try
@@ -84,16 +81,32 @@ public class TestVersioned
 			{
 			System.out.println(e);
 			System.out.println("  in "+e.getStackTrace()[0]);
-			}
-
-		System.out.println(factory.getStatistics());		
+			}		
 		}
 
 	public static void main(String[] args) throws Exception
 		{
 		TestVersioned test = new TestVersioned();
 		test.setUp();
-		test.staleUpdate(false);
-		test.staleUpdate(true);
+		System.out.println("=== Simple update ===");
+		test.simpleUpdate();
+		System.out.println("=== Stale update (magic) ===");
+		long magicStartTime = System.currentTimeMillis();
+		for(long i=0; i<1000; i++)
+			{
+			test.staleUpdate(i,true);
+			}
+		long magicEndTime = System.currentTimeMillis();
+		long magicTime = magicEndTime - magicStartTime;
+		System.out.println("=== Stale update (normal) ===");
+		long normalStartTime = System.currentTimeMillis();
+		for(long i=1000; i<2000; i++)
+			{
+			test.staleUpdate(i,false);
+			}
+		long normalEndTime = System.currentTimeMillis();
+		long normalTime = normalEndTime - normalStartTime;
+		double percent = Math.floor(100*magicTime/normalTime);
+		System.out.println("=== Normal update : "+normalTime+" ms , Magic update : "+magicTime+" ms -> magic = "+percent+"% x normal ===");
 		}
 	}
