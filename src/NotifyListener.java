@@ -1,18 +1,15 @@
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.Session;
-import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
 
-public class NotifyListener implements LoadEventListener, PostLoadEventListener, PersistEventListener, FlushEntityEventListener
+public class NotifyListener implements LoadEventListener, PostLoadEventListener, PersistEventListener, FlushEntityEventListener, PreUpdateEventListener
 	{
 	private static final long serialVersionUID = 1L;
 
@@ -79,6 +76,13 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 		checkObject(event.getEntity(), event.getSession());
 		}
 
+	public boolean onPreUpdate(PreUpdateEvent event)
+		{
+		System.out.println("Hibernate:  Pre-update event");
+		checkObject(event.getEntity(), event.getSession());
+		return true;
+		}
+	
 	public Serializable checkObject(Object object, EventSource session) throws StaleObjectStateException
 		{
 		updateStaleUidsAndVersions();
