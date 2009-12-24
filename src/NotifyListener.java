@@ -54,7 +54,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 		{
 		System.out.println("Hibernate: Post load event");
 		ProcessLoadEvent(event, true);
-		checkObject(event.getEntity(), event.getSession(), event.getPersister().getEntityName());
+		checkObject(event.getEntity(), event.getSession());
 		}
 	
 	public void onLoad(LoadEvent event, LoadType type) throws StaleObjectStateException
@@ -64,22 +64,22 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate:  Persist event");
-		checkObject(event.getObject(), event.getSession(), event.getEntityName());
+		checkObject(event.getObject(), event.getSession());
 		}
 
 	public void onPersist(PersistEvent event) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate:  Persist event");
-		checkObject(event.getObject(), event.getSession(), event.getEntityName());
+		checkObject(event.getObject(), event.getSession());
 		}
 	
 	public void onFlushEntity(FlushEntityEvent event) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate:  Flush entity event");
-		checkObject(event.getEntity(), event.getSession(), event.getEntityEntry().getEntityName());
+		checkObject(event.getEntity(), event.getSession());
 		}
 
-	public Serializable checkObject(Object object, EventSource session, String entityName) throws StaleObjectStateException
+	public Serializable checkObject(Object object, EventSource session) throws StaleObjectStateException
 		{
 		updateStaleUidsAndVersions();
 		System.out.print("* Checking object : ");
@@ -90,7 +90,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 				{
 				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
 				}
-			throw new StaleObjectStateException(entityName, session.getIdentifier(object)); // TODO: Should be optional for loads
+			throw new StaleObjectStateException(session.getEntityName(object), session.getIdentifier(object)); // TODO: Should be optional for loads
 			}
 		System.out.println("Object is not verifiably stale");
 		return null;
