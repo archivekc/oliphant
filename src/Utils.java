@@ -50,6 +50,7 @@ public class Utils
 		"org.hibernate.dialect.PostgreSQLDialect");
 		config.setProperty("hibernate.connection.driver_class",
 				"org.postgresql.Driver");
+		config.setProperty("hibernate.generate_statistics", "true");
 		config.setProperty("hibernate.connection.url",
 				"jdbc:postgresql://localhost/hibernate");
 		config.setProperty("hibernate.connection.username", "hibernate");

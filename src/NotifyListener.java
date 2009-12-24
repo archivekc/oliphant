@@ -53,6 +53,7 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
+		System.out.println("Hibernate: Post load event");
 		ProcessLoadEvent(event, true);
 		checkObject(event.getEntity(), event.getSession(), event.getPersister().getEntityName());
 		}
@@ -63,33 +64,36 @@ public class NotifyListener implements LoadEventListener, PostLoadEventListener,
 	
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException
 		{
+		System.out.println("Hibernate:  Persist event");
 		checkObject(event.getObject(), event.getSession(), event.getEntityName());
 		}
 
 	public void onPersist(PersistEvent event) throws StaleObjectStateException
 		{
+		System.out.println("Hibernate:  Persist event");
 		checkObject(event.getObject(), event.getSession(), event.getEntityName());
 		}
 	
 	public void onFlushEntity(FlushEntityEvent event) throws StaleObjectStateException
 		{
+		System.out.println("Hibernate:  Flush entity event");
 		checkObject(event.getEntity(), event.getSession(), event.getEntityEntry().getEntityName());
 		}
 
 	public Serializable checkObject(Object object, EventSource session, String entityName) throws StaleObjectStateException
 		{
 		updateStaleUidsAndVersions();
-		System.out.println("* Checking object");
+		System.out.print("* Checking object : ");
 		if (isKnownToBeStaleInSession(object, session))
 			{
-			System.out.println("* Object is stale in session");
+			System.out.println("Object is stale in session");
 			if (isKnownToBeStaleInL2(object))
 				{
 				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
 				}
 			throw new StaleObjectStateException(entityName, session.getIdentifier(object)); // TODO: Should be optional for loads
 			}
-		System.out.println("* Object is not verifiably stale");
+		System.out.println("Object is not verifiably stale");
 		return null;
 		}
 
