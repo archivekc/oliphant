@@ -105,6 +105,7 @@ public class TestVersioned
 		
 		try
 			{
+			session.persist(o);
 			tx.commit();
 			}
 		catch (Exception e)
