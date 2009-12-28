@@ -1,8 +1,12 @@
 import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.Version;
-
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+ 
 @Entity
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)
+
 public class PersistentVersionedObject {
 
 	private long id;

@@ -1,12 +1,16 @@
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
+import org.hibernate.cache.entry.CacheEntry;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
 
@@ -74,15 +78,22 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	public Serializable checkObject(Object object, EventSource session) throws StaleObjectStateException
 		{
 		updateStaleUidsAndVersions();
-		System.out.print("* Checking object : ");
+		Serializable identifier = session.getIdentifier(object);
+		System.out.print("* Checking object "+identifier+" : ");
 		if (isKnownToBeStaleInSession(object, session))
 			{
-			System.out.println("Object is stale in session");
+			System.out.print("Object is stale in session");
+			String entityName = session.getEntityName(object);
 			if (isKnownToBeStaleInL2(object, session))
 				{
-				sessionFactory.evict(object.getClass(), session.getIdentifier(object));
+				System.out.println(" and in L2 cache");
+				evictFromL2(object, session);
 				}
-			throw new StaleObjectStateException(session.getEntityName(object), session.getIdentifier(object)); // TODO: Should be optional for loads
+			else
+				{
+				System.out.println();
+				}
+			throw new StaleObjectStateException(entityName, identifier); // TODO: Should be optional for loads
 			}
 		System.out.println("Object is not verifiably stale");
 		return null;
@@ -90,23 +101,52 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 
 	public boolean isKnownToBeStaleInL2(Object object, EventSource session)
 		{
-		EntityPersister persister = sessionFactory.getEntityPersister(session.getEntityName(object));
-		EntityRegionAccessStrategy cacheAccessStrategy = persister.getCacheAccessStrategy();
-		if (cacheAccessStrategy==null) {return false;}
-		Object cachedObject = cacheAccessStrategy.get(session.getIdentifier(object), 0);
-		System.out.println(cachedObject);
-		return false;
-		// TODO : check cache, maybe do it in a separate cache manager ?
-		/*
-	 	EntityPersister persister = sessionFactory.getEntityPersister(entityName);
+		final EntityPersister persister = sessionFactory.getEntityPersister(session.getEntityName(object));
+		String uid = getUid(object, session);
+		if (!versions.containsKey(uid)) {return false;}
 		if (persister.isVersioned())
 			{
-			object.getVersion()
-			sessionFactory.
-			// comparer version L2 et derniere version connue. Comment recuperer version L2 ?
+			if (persister.hasCache() && session.getCacheMode().isGetEnabled())
+				{
+				final EntityRegionAccessStrategy cacheAccessStrategy = persister.getCacheAccessStrategy();
+				if (cacheAccessStrategy==null) {return false;}
+				final CacheKey ck = new CacheKey(
+						session.getIdentifier(object),
+						persister.getIdentifierType(),
+						persister.getRootEntityName(),
+						session.getEntityMode(),
+						session.getFactory()
+						);
+				CacheEntry cachedObject = (CacheEntry) cacheAccessStrategy.get(ck, Long.MAX_VALUE);
+				if (cachedObject==null) {return false;}
+				if (cachedObject.getDisassembledState()[persister.getVersionProperty()] != versions.get(uid)) {return true;}
+				}
 			}
-		*/
+		return false;
 		}
+	
+	public void evictFromL2(Object object, EventSource session)
+	{
+	final EntityPersister persister = sessionFactory.getEntityPersister(session.getEntityName(object));
+	if (persister.isVersioned())
+		{
+		if (persister.hasCache() && session.getCacheMode().isGetEnabled())
+			{
+			final EntityRegionAccessStrategy cacheAccessStrategy = persister.getCacheAccessStrategy();
+			if (cacheAccessStrategy==null) {return;}
+			final CacheKey ck = new CacheKey(
+					session.getIdentifier(object),
+					persister.getIdentifierType(),
+					persister.getRootEntityName(),
+					session.getEntityMode(),
+					session.getFactory()
+					);
+			cacheAccessStrategy.evict(ck);
+			Serializable identifier = session.getIdentifier(object);
+			System.out.println("* Object "+identifier+" evicted from L2");
+			}
+		}
+	}
 
 	public boolean isKnownToBeStaleInSession(Object object, EventSource session)
 		{
