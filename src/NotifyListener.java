@@ -13,11 +13,6 @@ import org.hibernate.event.*;
 public class NotifyListener implements PostLoadEventListener, PersistEventListener, FlushEntityEventListener, PreUpdateEventListener
 	{
 	private static final long serialVersionUID = 1L;
-
-	/*private HashMap staleUids = new HashMap(); // Map de session -> Map de UID (string identifiant table + objet) -> true ?
-					       // Selon comment se fait la comparaison des objets session, il pourra etre necessaire
-					       // de faire un objet qui prend une session dans le constructeur et definit un nouvel equal
-					       // qui verifie juste si on a affaire a la meme instance de session*/
 	private HashMap<String,String> versions = new HashMap<String,String>(); // Maps object UIDs to latest known versions
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
@@ -40,10 +35,6 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 				// We have not yet received notifications for this object
 				versions.put(uid, persister.getVersion(object, session.getEntityMode()).toString());
 				}
-			}
-		else
-			{
-			// no versionning, we have to remove the uid from dirtyUids for this session (no way of knowing if stale)
 			}
 		return true;
 		}
@@ -114,11 +105,6 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 			sessionFactory.
 			// comparer version L2 et derniere version connue. Comment recuperer version L2 ?
 			}
-		else
-			{
-			// We can't know what version is in L2, so we can't know if it's stale
-			return false;
-			}
 		*/
 		}
 
@@ -126,7 +112,6 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		{
 		String uid = getUid(object, session);
 		updateStaleUidsAndVersions();
-		//if ((staleIds.containsKey(session)) && (staleIds.get(session).ContainsKey(uid))) {return true;}
 		if (versions.containsKey(uid))
 			{
 			EntityPersister persister = session.getEntityPersister(session.getEntityName(object), object);
@@ -150,21 +135,9 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 			{
 			Notification notif = updates.get(i);
 			if (notif.getVersion() != null) {versions.put(notif.getUid(), notif.getVersion());}
-			/*List<Session> sessions = stae;
-			for (int j=0; j<sessions.size(); j++)
-				{
-				Session session = sessions.get(j);
-				if (!staleUids.containsKey(session)) {staleUids.put(session, new HashMap());}
-				((HashMap) staleUids.get(session)).put(notif.getUid(), true);
-				}*/
 			}
 		}
  
-	private void garbageCollector()
-		{
-		// TODO: remove the keys of closed sessions from the staleUids Map
-		}
-
 	public void setSpecificListener(SpecificNotifyListener specList)
 		{
 		specificNotifyListener = specList;
