@@ -141,5 +141,7 @@ public class TestVersioned
 		long normalTime = normalEndTime - normalStartTime;
 		double percent = Math.floor(100*magicTime/normalTime);
 		System.out.println("=== Normal update : "+normalTime+" ms , Magic update : "+magicTime+" ms -> magic = "+percent+"% x normal ===");
+		System.out.println("=== Stale update (magic, cached) ===");
+		test.staleUpdate(3,true);
 		}
 	}

@@ -1,6 +1,5 @@
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +9,6 @@ import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.event.*;
 
@@ -20,28 +18,6 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	private HashMap<String,String> versions = new HashMap<String,String>(); // Maps object UIDs to latest known versions
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
-
-	public Serializable ProcessLoadEvent(PostLoadEvent event, boolean throwStaleException) throws StaleObjectStateException
-		{
-		if (sessionFactory == null)
-			{
-			// our first event, initialize the listener
-			sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
-			}
-		Object object = event.getEntity();
-		EventSource session = event.getSession();
-		EntityPersister persister = event.getPersister();
-		String uid = getUid(object, session);
-		if (persister.isVersioned())
-			{
-			if (!versions.containsKey(uid))
-				{
-				// We have not yet received notifications for this object
-				versions.put(uid, persister.getVersion(object, session.getEntityMode()).toString());
-				}
-			}
-		return true;
-		}
 
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
@@ -74,6 +50,28 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		checkObject(event.getEntity(), event.getSession());
 		return true;
 		}
+	
+	public Serializable ProcessLoadEvent(PostLoadEvent event, boolean throwStaleException) throws StaleObjectStateException
+	{
+	if (sessionFactory == null)
+		{
+		// our first event, initialize the listener
+		sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
+		}
+	Object object = event.getEntity();
+	EventSource session = event.getSession();
+	EntityPersister persister = event.getPersister();
+	String uid = getUid(object, session);
+	if (persister.isVersioned())
+		{
+		if (!versions.containsKey(uid))
+			{
+			// We have not yet received notifications for this object
+			versions.put(uid, persister.getVersion(object, session.getEntityMode()).toString());
+			}
+		}
+	return true;
+	}
 	
 	public Serializable checkObject(Object object, EventSource session) throws StaleObjectStateException
 		{
