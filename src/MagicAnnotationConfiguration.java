@@ -45,10 +45,6 @@ public class MagicAnnotationConfiguration extends AnnotationConfiguration
 			{
 			listener.setSpecificListener(new PostgreSQLNotifyListener());
 			}
-		else if (driver.equals("oracle.jdbc.driver.OracleDriver"))
-			{
-			listener.setSpecificListener(new OracleNotifyListener());
-			}
 		return super.buildSessionFactory();
 		}
 	}
