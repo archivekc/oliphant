@@ -11,7 +11,7 @@ public class TestVersioned
 	private Connection conn;
 	private SessionFactory magicSessionFactory;
 	private SessionFactory sessionFactory;
-	private final int NB_ROWS = 2000;
+	private final int NB_ROWS = 4002;
 	
 	public void setUp() throws SQLException
 		{
@@ -46,32 +46,20 @@ public class TestVersioned
 		st.close();
 		}
 	
-	public void simpleUpdate()
+	public void staleLoad(long i) throws SQLException
 		{
-		Session session = sessionFactory.getCurrentSession();
-		
-		Transaction tx = session.beginTransaction();
-		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, (long) 1);
-		o.setChampString("valeur 1");
-		tx.commit();
-
-		System.out.println(sessionFactory.getStatistics());		
-		}
-
-	public void staleLoad() throws SQLException
-		{
-		Session session = sessionFactory.getCurrentSession();
+		Session session = magicSessionFactory.getCurrentSession();
 		
 		System.out.println("Hibernate: starting transaction");
 		Transaction tx = session.beginTransaction();
 		
 		Statement st = conn.createStatement();
-		System.out.println("Updating object 1 outside Hibernate");
-		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id=1");
+		System.out.println("Updating object "+i+" outside Hibernate");
+		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id="+i);
 		st.close();
 		
-		System.out.println("Hibernate: loading object 1");
-		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, (long) 1);
+		System.out.println("Hibernate: loading object "+i);
+		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, i);
 		o.setChampString("valeur 1");
 		try
 			{
@@ -86,7 +74,7 @@ public class TestVersioned
 		System.out.println(sessionFactory.getStatistics());		
 		}
 	
-	public void staleUpdate(long id, boolean magic) throws SQLException
+	public void update(long id, boolean magic, boolean stale) throws SQLException
 		{
 		SessionFactory factory = magic ? magicSessionFactory : sessionFactory;
 		
@@ -94,14 +82,18 @@ public class TestVersioned
 		
 		System.out.println("Hibernate: starting transaction");
 		Transaction tx = session.beginTransaction();
+		PersistentVersionedObject o1 = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, id+1);
 		System.out.println("Hibernate: loading object "+id);
 		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, id);
 		o.setChampString("valeur 2");	
 		
-		Statement st = conn.createStatement();
-		System.out.println("Updating object "+id+" outside Hibernate");
-		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id="+id);
-		st.close();
+		if (stale)
+			{
+			Statement st = conn.createStatement();
+			System.out.println("Updating object "+id+" outside Hibernate");
+			st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id="+id);
+			st.close();
+			}
 		
 		try
 			{
@@ -119,29 +111,56 @@ public class TestVersioned
 		{
 		TestVersioned test = new TestVersioned();
 		test.setUp();
-		System.out.println("=== Simple update ===");
-		test.simpleUpdate();
-		System.out.println("=== Stale load ===");
-		test.staleLoad();
-		System.out.println("=== Stale update (magic) ===");
-		long magicStartTime = System.currentTimeMillis();
+
+		System.out.println("=== Simple update (normal) ===");
+		long simpleNormalStartTime = System.currentTimeMillis();
 		for(long i=0; i<1000; i++)
 			{
-			test.staleUpdate(i,true);
+			test.update(i, false, false);
 			}
-		long magicEndTime = System.currentTimeMillis();
-		long magicTime = magicEndTime - magicStartTime;
-		System.out.println("=== Stale update (normal) ===");
-		long normalStartTime = System.currentTimeMillis();
+		long simpleNormalEndTime = System.currentTimeMillis();
+		long simpleNormalTime = simpleNormalEndTime - simpleNormalStartTime;
+		
+		System.out.println("=== Simple update (magic) ===");
+		long simpleMagicStartTime = System.currentTimeMillis();
 		for(long i=1000; i<2000; i++)
 			{
-			test.staleUpdate(i,false);
+			test.update(i, true, false);
 			}
-		long normalEndTime = System.currentTimeMillis();
-		long normalTime = normalEndTime - normalStartTime;
-		double percent = Math.floor(100*magicTime/normalTime);
-		System.out.println("=== Normal update : "+normalTime+" ms , Magic update : "+magicTime+" ms -> magic = "+percent+"% x normal ===");
+		long simpleMagicEndTime = System.currentTimeMillis();
+		long simpleMagicTime = simpleMagicEndTime - simpleMagicStartTime;
+		
+		double magicCost = Math.floor(100*simpleMagicTime/simpleNormalTime);
+		
+		System.out.println("=== Normal update : "+simpleNormalTime+" ms , Normal magic update : "+simpleMagicTime+" ms -> magic = "+magicCost+"% x normal ===");
+		
+		System.out.println("=== Stale load ===");
+		test.staleLoad(4000);
+
+		System.out.println("=== Stale update (normal) ===");
+		long staleNormalStartTime = System.currentTimeMillis();
+		for(long i=2000; i<3000; i++)
+			{
+			test.update(i,false, true);
+			}
+		long staleNormalEndTime = System.currentTimeMillis();
+		long staleNormalTime = staleNormalEndTime - staleNormalStartTime;
+		
+		System.out.println("=== Stale update (magic) ===");
+		long staleMagicStartTime = System.currentTimeMillis();
+		for(long i=3000; i<4000; i++)
+			{
+			test.update(i,true, true);
+			}
+		long staleMagicEndTime = System.currentTimeMillis();
+		long staleMagicTime = staleMagicEndTime - staleMagicStartTime;
+
+		double magicGain = Math.floor(100*staleMagicTime/staleNormalTime);
+
+		System.out.println("=== Normal update : "+staleNormalTime+" ms , Magic update : "+staleMagicTime+" ms -> magic = "+magicGain+"% x normal ===");
+		
+
 		System.out.println("=== Stale update (magic, cached) ===");
-		test.staleUpdate(3,true);
+		test.update(3, true, false);
 		}
 	}
