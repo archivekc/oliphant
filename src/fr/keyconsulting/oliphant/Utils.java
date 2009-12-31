@@ -23,8 +23,9 @@ public class Utils
 			AnnotationConfiguration config = new AnnotationConfiguration();
 			fillConfig(config);
 			sessionFactory = config.buildSessionFactory();
-			AnnotationConfiguration magicConfig = new MagicAnnotationConfiguration();
+			AnnotationConfiguration magicConfig = new AnnotationConfiguration();
 			fillConfig(magicConfig);
+			NotifyListener.attachListeners(magicConfig);
 			magicSessionFactory = magicConfig.buildSessionFactory();
 			}
 		catch (Throwable ex)
@@ -41,7 +42,6 @@ public class Utils
 
 	public static SessionFactory getMagicSessionFactory()
 		{
-		// TODO Auto-generated method stub
 		return magicSessionFactory;
 		}
 	

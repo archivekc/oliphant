@@ -8,6 +8,7 @@ import java.util.Map;
 import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.StaleObjectStateException;
@@ -182,5 +183,44 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		{
 		specificNotifyListener = specList;
 		specificNotifyListener.setUp();
+		}
+	
+	public static void attachListeners(Configuration config)
+		{
+		NotifyListener listener = new NotifyListener();
+
+		PostLoadEventListener[] originalPostLoadListeners = config.getEventListeners().getPostLoadEventListeners();
+		int originalPostLoadListenersSize = java.lang.reflect.Array.getLength(originalPostLoadListeners);
+		PostLoadEventListener[] postLoadEventListeners = new PostLoadEventListener[originalPostLoadListenersSize+1];
+		postLoadEventListeners[0] = listener;
+		System.arraycopy(originalPostLoadListeners,0,postLoadEventListeners,1,originalPostLoadListenersSize);
+		config.getEventListeners().setPostLoadEventListeners(postLoadEventListeners);
+		
+		PersistEventListener[] originalPersistEventListeners = config.getEventListeners().getPersistEventListeners();
+		int originalPersistEventListenersSize = java.lang.reflect.Array.getLength(originalPersistEventListeners);
+		PersistEventListener[] persistEventListeners = new PersistEventListener[originalPersistEventListenersSize+1];
+		persistEventListeners[0] = listener;
+		System.arraycopy(originalPersistEventListeners,0,persistEventListeners,1,originalPersistEventListenersSize);
+		config.getEventListeners().setPersistEventListeners(persistEventListeners);
+
+		FlushEntityEventListener[] originalFlushEntityEventListeners = config.getEventListeners().getFlushEntityEventListeners();
+		int originalFlushEntityEventListenersSize = java.lang.reflect.Array.getLength(originalFlushEntityEventListeners);
+		FlushEntityEventListener[] flushEntityEventListeners = new FlushEntityEventListener[originalFlushEntityEventListenersSize+1];
+		flushEntityEventListeners[0] = listener;
+		System.arraycopy(originalFlushEntityEventListeners,0,flushEntityEventListeners,1,originalFlushEntityEventListenersSize);
+		config.getEventListeners().setFlushEntityEventListeners(flushEntityEventListeners);
+		
+		PreUpdateEventListener[] originalPreUpdateEventListeners = config.getEventListeners().getPreUpdateEventListeners();
+		int originalPreUpdateEventListenersSize = java.lang.reflect.Array.getLength(originalPreUpdateEventListeners);
+		PreUpdateEventListener[] preUpdateEventListeners = new PreUpdateEventListener[originalPreUpdateEventListenersSize+1];
+		preUpdateEventListeners[0] = listener;
+		System.arraycopy(originalPreUpdateEventListeners,0,preUpdateEventListeners,1,originalPreUpdateEventListenersSize);
+		config.getEventListeners().setPreUpdateEventListeners(preUpdateEventListeners);
+		String driver = config.getProperty("hibernate.connection.driver_class");
+		
+		if (driver.equals("org.postgresql.Driver"))
+			{
+			listener.setSpecificListener(new PostgreSQLNotifyListener());
+			}
 		}
 	}
