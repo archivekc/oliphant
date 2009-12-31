@@ -25,7 +25,7 @@ public class Utils
 			sessionFactory = config.buildSessionFactory();
 			AnnotationConfiguration magicConfig = new AnnotationConfiguration();
 			fillConfig(magicConfig);
-			NotifyListener.attachListeners(magicConfig);
+			NotifyListener.attachListener(magicConfig);
 			magicSessionFactory = magicConfig.buildSessionFactory();
 			}
 		catch (Throwable ex)

@@ -193,7 +193,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		specificNotifyListener.setUp();
 		}
 	
-	public static void attachListeners(Configuration config)
+	public static void attachListener(Configuration config)
 		{
 		NotifyListener listener = new NotifyListener();
 
