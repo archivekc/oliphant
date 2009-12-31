@@ -216,11 +216,22 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		preUpdateEventListeners[0] = listener;
 		System.arraycopy(originalPreUpdateEventListeners,0,preUpdateEventListeners,1,originalPreUpdateEventListenersSize);
 		config.getEventListeners().setPreUpdateEventListeners(preUpdateEventListeners);
-		String driver = config.getProperty("hibernate.connection.driver_class");
-		
-		if (driver.equals("org.postgresql.Driver"))
+		try
 			{
-			listener.setSpecificListener(new PostgreSQLNotifyListener());
+			Class specListClass = Class.forName(config.getProperty("oliphant.specific_listener"));
+			listener.setSpecificListener((SpecificNotifyListener) specListClass.newInstance());
+			}
+		catch (ClassNotFoundException e)
+			{
+			e.printStackTrace();
+			}
+		catch (InstantiationException e)
+			{
+			e.printStackTrace();
+			}
+		catch (IllegalAccessException e)
+			{
+			e.printStackTrace();
 			}
 		}
 	}
