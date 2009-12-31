@@ -20,35 +20,44 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	private HashMap<String,String> versions = new HashMap<String,String>(); // Maps object UIDs to latest known versions
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
+	private boolean allowStaleLoad = true;
 
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate: Post load event");
 		ProcessLoadEvent(event, true);
-		checkObject(event.getEntity(), event.getSession());
+		if (!allowStaleLoad)
+			{
+			updateStaleUidsAndVersions();
+			checkObject(event.getEntity(), event.getSession());
+			}
 		}
 	
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate:  Persist event");
+		updateStaleUidsAndVersions();
 		checkObject(event.getObject(), event.getSession());
 		}
 
 	public void onPersist(PersistEvent event) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate:  Persist event");
+		updateStaleUidsAndVersions();
 		checkObject(event.getObject(), event.getSession());
 		}
 	
 	public void onFlushEntity(FlushEntityEvent event) throws StaleObjectStateException
 		{
 		System.out.println("Hibernate:  Flush entity event");
+		updateStaleUidsAndVersions();
 		checkObject(event.getEntity(), event.getSession());
 		}
 
 	public boolean onPreUpdate(PreUpdateEvent event)
 		{
 		System.out.println("Hibernate:  Pre-update event");
+		updateStaleUidsAndVersions();
 		checkObject(event.getEntity(), event.getSession());
 		return true;
 		}
@@ -77,7 +86,6 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	
 	public Serializable checkObject(Object object, EventSource session) throws StaleObjectStateException
 		{
-		updateStaleUidsAndVersions();
 		Serializable identifier = session.getIdentifier(object);
 		System.out.print("* Checking object "+identifier+" : ");
 		if (isKnownToBeStaleInSession(object, session))
@@ -233,5 +241,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 			{
 			e.printStackTrace();
 			}
+		String allowStaleString = config.getProperty("oliphant.allow_stale_load");
+		if ((allowStaleString!=null) && (allowStaleString.equals("false"))) {listener.allowStaleLoad = false;}
 		}
 	}
