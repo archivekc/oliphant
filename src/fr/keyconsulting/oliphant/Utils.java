@@ -49,6 +49,8 @@ public class Utils
 		{
 		config.setProperty("hibernate.dialect",
 		"org.hibernate.dialect.PostgreSQLDialect");
+		config.setProperty("oliphant.specific_listener",
+		"fr.keyconsulting.oliphan.PostgreSQLNotifyListener");
 		config.setProperty("hibernate.connection.driver_class",
 				"org.postgresql.Driver");
 		config.setProperty("hibernate.generate_statistics", "true");
