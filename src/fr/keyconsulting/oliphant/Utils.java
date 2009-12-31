@@ -69,7 +69,6 @@ public class Utils
 		config.setProperty("hibernate.cache.use_second_level_cache", "true");
 		config.setProperty("hibernate.cache.provider_class", "org.hibernate.cache.EhCacheProvider");
 
-		config.addAnnotatedClass(PersistentObject.class);
 		config.addAnnotatedClass(PersistentVersionedObject.class);
 		}
 	}
