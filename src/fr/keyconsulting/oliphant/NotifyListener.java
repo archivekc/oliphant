@@ -101,7 +101,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 				{
 				System.out.println();
 				}
-			throw new StaleObjectStateException(entityName, identifier); // TODO: Should be optional for loads
+			throw new StaleObjectStateException(entityName, identifier);
 			}
 		System.out.println("Object is not verifiably stale");
 		return null;
