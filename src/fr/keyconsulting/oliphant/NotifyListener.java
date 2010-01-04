@@ -186,12 +186,6 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 			if (notif.getVersion() != null) {versions.put(notif.getUid(), notif.getVersion());}
 			}
 		}
- 
-	public void setSpecificListener(SpecificNotifyListener specList)
-		{
-		specificNotifyListener = specList;
-		specificNotifyListener.setUp();
-		}
 	
 	public static void attachListener(Configuration config)
 		{
@@ -227,7 +221,8 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		try
 			{
 			Class specListClass = Class.forName(config.getProperty("oliphant.specific_listener"));
-			listener.setSpecificListener((SpecificNotifyListener) specListClass.newInstance());
+			listener.specificNotifyListener = (SpecificNotifyListener) specListClass.newInstance();
+			listener.specificNotifyListener.setUp(config);
 			}
 		catch (ClassNotFoundException e)
 			{

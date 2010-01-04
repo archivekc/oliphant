@@ -8,16 +8,21 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.cfg.Configuration;
 
 class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
 	private BufferedReader br;
 	
-	
-	public void setUp()
+	public void setUp(Configuration config)
 		{       
+		String filename = config.getProperty("oliphant.file_notify.file");
+		if (filename == null)
+			{
+			filename = "/var/lib/postgres/my_notify";
+			}
 		try {
-			RandomAccessFile rand = new RandomAccessFile("/var/lib/postgres/my_notify","rw");
+			RandomAccessFile rand = new RandomAccessFile(filename,"rw");
 			rand.setLength(0);
 			rand.close();
 			}
@@ -25,7 +30,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 			{
 			e.printStackTrace();
 			}
-		File file = new File("/var/lib/postgres/my_notify");
+		File file = new File(filename);
 		FileInputStream fis;
 		try
 			{
