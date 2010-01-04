@@ -1,0 +1,88 @@
+<project name="Oliphant" default="dist" basedir=".">
+  <description>
+    Oliphant uses database change notifications to detect stale objects in hibernate sessions and L2 caches.
+  </description>
+
+  <!-- set global properties for this build -->
+  <property name="src"   location="src"/>
+  <property name="build" location="build"/>
+  <property name="dist"  location="dist"/>
+  <property name="lib"   location="lib"/>
+
+  <path id="project.class.path">
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/hibernate-annotations.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/hibernate3.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/dom4j.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/ejb3-persistence.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/hibernate-commons-annotations.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/slf4j-api.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/lib/required/antlr-2.7.6.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/lib/required/commons-collections-3.1.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/lib/required/dom4j-1.6.1.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/lib/required/javassist-3.9.0.GA.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/lib/required/jta-1.1.jar"/>
+    <pathelement path="lib/hibernate-distribution-3.3.2.GA/lib/required/slf4j-api-1.5.8.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/test/log4j.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/test/slf4j-log4j12.jar"/>
+    <pathelement path="lib/postgresql-8.4-701.jdbc4.jar"/>
+    <pathelement path="lib/ehcache-1.7.1/lib/ehcache-core-1.7.1.jar"/>
+  </path>
+
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+    <!-- Create the build directory structure used by build -->
+    <mkdir dir="${build}"/>
+    <!-- Download and install the required libs -->
+    <get src="http://downloads.sourceforge.net/project/hibernate/hibernate-annotations/3.4.0.GA/hibernate-annotations-3.4.0.GA.zip?use_mirror=ovh" 
+         dest="${lib}/hibernate-annotations-3.4.0.GA.zip" 
+         verbose="true"
+         usetimestamp="true"/>
+    <unzip src="${lib}/hibernate-annotations-3.4.0.GA.zip" dest="${lib}" overwrite="false"/>
+    <get src="http://downloads.sourceforge.net/project/hibernate/hibernate3/3.3.2.GA/hibernate-distribution-3.3.2.GA-dist.zip?use_mirror=garr" 
+         dest="${lib}/hibernate-distribution-3.3.2.GA-dist.zip" 
+         verbose="true"
+         usetimestamp="true"/>
+    <unzip src="${lib}/hibernate-distribution-3.3.2.GA-dist.zip" dest="${lib}" overwrite="false"/>
+    <get src="http://jdbc.postgresql.org/download/postgresql-8.4-701.jdbc4.jar" 
+         dest="${lib}/postgresql-8.4-701.jdbc4.jar" 
+         verbose="true"
+         usetimestamp="true"/>
+    <get src="http://downloads.sourceforge.net/project/ehcache/ehcache/ehcache-1.7.1/ehcache-1.7.1-distribution.tar.gz?use_mirror=dfn" 
+         dest="${lib}/ehcache-1.7.1-distribution.tar.gz" 
+         verbose="true"
+         usetimestamp="true"/>
+    <gunzip src="${lib}/ehcache-1.7.1-distribution.tar.gz" dest="${lib}"/>
+    <untar src="${lib}/ehcache-1.7.1-distribution.tar" dest="${lib}"/>
+  </target>
+
+  <target name="build" depends="init" description="compile the source " >
+    <!-- Compile the java code from ${src} into ${build} -->
+    <javac srcdir="${src}"
+           destdir="${build}"
+           classpathref="project.class.path"/>
+  </target>
+
+  <target name="dist" depends="build" description="generate the distribution" >
+    <!-- Create the distribution directory -->
+    <mkdir dir="${dist}/"/>
+    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
+    <jar jarfile="${dist}/oliphant-${DSTAMP}.jar" basedir="${build}"/>
+  </target>
+
+  <target name="test" depends="build" description="run the poc test" >
+    <java classname="fr.keyconsulting.oliphant.TestVersioned">
+      <classpath>
+        <pathelement path="${build}"/>
+        <pathelement path="${project.class.path}"/>
+      </classpath>
+    </java>
+  </target>
+
+  <target name="clean" description="clean up" >
+    <!-- Delete the ${build} and ${dist} directory trees -->
+    <delete dir="${build}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
+
