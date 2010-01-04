@@ -17,7 +17,7 @@
 						<div class="article">
 	<p><strong>Oliphant</strong> is a library that uses change notifications from database servers to improve the management of objects via the <strong>Hibernate</strong> Java ORM.</p>
 
-	<p>Change notifications allow the library to <strong>detect stale objects</strong> before they are sent back to the database, and to remove them from the L2 cache.</p>
+	<p>Change notifications allow the library to <strong>detect stale objects</strong> before they are sent back to the database. It can throw a StaleObjectStateException as soon as the persist method is called on a stale object, and remove it from the L2 cache if needed. There is even an option to throw the exception if a stale object is loaded, thereby preventing wasted processing on the basis of this object.</p>
 
 	<p>Oliphant is still a proof of concept. It works with <strong>PostgreSQL</strong> using a C function that sends notifications to Oliphant via a file. We are working on a patch to PostgreSQL that would allow arbitrary payloads in PostgreSQL notifications, meaning Oliphant could work with native PostgreSQL notifications.</p>
 
@@ -31,7 +31,7 @@
 		<a href="">Snapshot with pre-built jar</a><br/><br/>
 
 	<h3>Usage</h3>
-	<p>To use oliphant, you just need to add the jar or classes to your classpath and call the NotifyListener.attachListener static method on your hibernate configuration object before using it to get your hibernate session factory. You also need to set the specific notify listener to be used depending on your database server. For now, the only supported one is the PostgreSQLNotifyListener that comes in the package.</p>
+	<p>To use Oliphant, you just need to add the jar or classes to your classpath and call the NotifyListener.attachListener static method on your hibernate configuration object before using it to get your hibernate session factory. You also need to set the specific notify listener to be used depending on your database server. For now, the only supported one is the PostgreSQLNotifyListener that comes in the package.</p>
 
 	<p>It should look something like this :</p>
 
@@ -45,8 +45,6 @@
 	NotifyListener.attachListener(magicConfig);
 	magicSessionFactory = magicConfig.buildSessionFactory();
 	</pre>
-
-	<p>You will then get a staleObjectStateException sooner when trying to persist a stale object, and the hibernate L2 cache if used will be cleared of said stale object.</p>
 
 							</div>
 						</div>
