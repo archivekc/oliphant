@@ -3,13 +3,13 @@
     Oliphant uses database change notifications to detect stale objects in hibernate sessions and L2 caches.
   </description>
 
-  <!-- set global properties for this build -->
-  <property name="src"   location="src"/>
-  <property name="build" location="build"/>
-  <property name="dist"  location="dist"/>
-  <property name="lib"   location="lib"/>
+  <property name="src"   value="src"/>
+  <property name="build" value="build"/>
+  <property name="dist"  value="dist"/>
+  <property name="lib"   value="lib"/>
 
   <path id="project.class.path">
+    <pathelement path="${java.class.path}"/>
     <pathelement path="lib/hibernate-annotations-3.4.0.GA/hibernate-annotations.jar"/>
     <pathelement path="lib/hibernate-distribution-3.3.2.GA/hibernate3.jar"/>
     <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/dom4j.jar"/>
@@ -26,12 +26,12 @@
     <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/test/slf4j-log4j12.jar"/>
     <pathelement path="lib/postgresql-8.4-701.jdbc4.jar"/>
     <pathelement path="lib/ehcache-1.7.1/lib/ehcache-core-1.7.1.jar"/>
+    <pathelement path="build/"/>
   </path>
 
   <target name="init">
     <!-- Create the time stamp -->
     <tstamp/>
-    <!-- Create the build directory structure used by build -->
     <mkdir dir="${build}"/>
     <!-- Download and install the required libs -->
     <get src="http://downloads.sourceforge.net/project/hibernate/hibernate-annotations/3.4.0.GA/hibernate-annotations-3.4.0.GA.zip?use_mirror=ovh" 
@@ -57,32 +57,33 @@
   </target>
 
   <target name="build" depends="init" description="compile the source " >
-    <!-- Compile the java code from ${src} into ${build} -->
     <javac srcdir="${src}"
            destdir="${build}"
            classpathref="project.class.path"/>
   </target>
 
   <target name="dist" depends="build" description="generate the distribution" >
-    <!-- Create the distribution directory -->
     <mkdir dir="${dist}/"/>
-    <!-- Put everything in ${build} into the MyProject-${DSTAMP}.jar file -->
     <jar jarfile="${dist}/oliphant-${DSTAMP}.jar" basedir="${build}"/>
   </target>
 
   <target name="test" depends="build" description="run the poc test" >
-    <java classname="fr.keyconsulting.oliphant.TestVersioned">
-      <classpath>
-        <pathelement path="${build}"/>
-        <pathelement path="${project.class.path}"/>
-      </classpath>
-    </java>
+    <java classname="fr.keyconsulting.oliphant.TestVersioned"
+          classpathref="project.class.path"/>
   </target>
 
   <target name="clean" description="clean up" >
-    <!-- Delete the ${build} and ${dist} directory trees -->
     <delete dir="${build}"/>
     <delete dir="${dist}"/>
+  </target>
+
+  <target name="snapshot" depends="dist" description="build the distribution snapshot" >
+    <delete file="${dist}/oliphant-${DSTAMP}.tar.gz" />
+    <tar destfile="${dist}/oliphant-${DSTAMP}.tar.gz"
+         compression="gzip"
+         basedir="."
+         includes="${dist}/*.jar, ${src}/**, ${build}/**, README"
+         excludes="${src}/postgresql/postgresql-git/**" />
   </target>
 </project>
 
