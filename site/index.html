@@ -17,11 +17,11 @@
 						<div class="article">
 	<p><strong>Oliphant</strong> is a library that uses change notifications from database servers to improve the management of objects via the <strong>Hibernate</strong> Java ORM.</p>
 
-	<p>Change notifications allow the library to <strong>detect stale objects</strong> before they are sent back to the database. It can throw a StaleObjectStateException as soon as the persist method is called on a stale object, and remove it from the L2 cache if needed. There is even an option to throw the exception if a stale object is loaded, thereby preventing wasted processing on the basis of this object.</p>
+	<p>Change notifications allow the library to <strong>detect stale objects</strong> before they are sent back to the database. It can throw a StaleObjectStateException as soon as the persist method is called on a stale object, and remove it from the L2 cache if needed. There is also an option to throw the exception if a stale object is loaded, thereby preventing useless processing on the basis of this outdated object.</p>
 
-	<p>Oliphant is still a proof of concept. It works with <strong>PostgreSQL</strong> using a C function that sends notifications to Oliphant via a file. We are working on a patch to PostgreSQL that would allow arbitrary payloads in PostgreSQL notifications, meaning Oliphant could work with native PostgreSQL notifications.</p>
+	<p>Oliphant is still a proof of concept. It works with <strong>PostgreSQL</strong> using an external C library that sends notifications to Oliphant via a file. We are working on a patch to PostgreSQL that would allow arbitrary payloads in PostgreSQL notifications, meaning Oliphant could work with native PostgreSQL notifications.</p>
 
-	<p>Oliphant is distributed under the Lesser GNU Public License (LGPL).</p>
+	<p>Oliphant is open source software, distributed under the Lesser GNU Public License (LGPL).</p>
 
 	<p>For questions, comments or patches, please contact opensource@keyconsulting.fr</p>
 
@@ -31,18 +31,23 @@
 		<a href="">Snapshot with pre-built jar</a><br/><br/>
 
 	<h3>Usage</h3>
-	<p>To use Oliphant, you just need to add the jar or classes to your classpath and call the NotifyListener.attachListener static method on your hibernate configuration object before using it to get your hibernate session factory. You also need to set the specific notify listener to be used depending on your database server. For now, the only supported one is the PostgreSQLNotifyListener that comes in the package.</p>
+	<p>To use Oliphant, you just need to add the jar or classes to your classpath and call the NotifyListener.attachListener static method on your hibernate configuration object before using it to get your hibernate session factory.</p>
 
-	<p>It should look something like this :</p>
+	<p>You will need to set the specific notify listener to be used depending on your database server. For now, the only supported one is the PostgreSQLNotifyListener that comes in the package. This listener requires defining triggers on the PostgreSQL tables you wish to monitor. You will find an example SQL file in the src/postgresql/mynotify directory. The trigger will call the my_notify C function that is defined in the bundled .so file. This is a temporary solution until PostgreSQL supports more complex notifications.</p>
+
+	<p>Only versioned hibernate objects are currently supported.</p>
+
+	<p>The end result should look something like this :</p>
 
 	<pre>
 	AnnotationConfiguration magicConfig = new AnnotationConfiguration();
 
-	magicConfig.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 	magicConfig.setProperty("oliphant.specific_listener", "fr.keyconsulting.oliphant.PostgreSQLNotifyListener");
-	magicConfig.setProperty("oliphant.allow_stale_load", "true");
+	magicConfig.setProperty("oliphant.allow_stale_load", "true"); // this is the default, set to false to allow StaleObjectState exceptions on load
+	// set your other properties here
 
 	NotifyListener.attachListener(magicConfig);
+
 	magicSessionFactory = magicConfig.buildSessionFactory();
 	</pre>
 
