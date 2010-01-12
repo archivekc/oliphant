@@ -71,7 +71,7 @@ public class Utils
 		config.setProperty("hibernate.dialect",
 		"org.hibernate.dialect.PostgreSQLDialect");
 		config.setProperty("oliphant.specific_listener",
-		"fr.keyconsulting.oliphant.PostgreSQLNotifyListener");
+		"fr.keyconsulting.oliphant.FileNotifyListener");
 		config.setProperty("oliphant.allow_stale_load",	"true");
 		config.setProperty("hibernate.connection.driver_class",
 				"org.postgresql.Driver");
