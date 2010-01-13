@@ -42,6 +42,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
 	private boolean allowStaleLoad = true;
+	private Configuration config;
 
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
@@ -192,10 +193,10 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 
 	private String getUid(Object object, EventSource session)
 		{
-		String fullEntityName = session.getEntityName(object);
-		String entityName = fullEntityName.substring(fullEntityName.lastIndexOf('.') + 1);
+		String entityName = session.getEntityName(object);
+		String tableName = config.getClassMapping(entityName).getTable().getName().toLowerCase();
 		String id = session.getIdentifier(object).toString();
-		return entityName+"#"+id;
+		return tableName+"#"+id;
 		}
 
 	private void updateStaleUidsAndVersions()
@@ -211,6 +212,8 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	public static void attachListener(Configuration config)
 		{
 		NotifyListener listener = new NotifyListener();
+
+		listener.config = config;
 
 		PostLoadEventListener[] originalPostLoadListeners = config.getEventListeners().getPostLoadEventListeners();
 		int originalPostLoadListenersSize = java.lang.reflect.Array.getLength(originalPostLoadListeners);

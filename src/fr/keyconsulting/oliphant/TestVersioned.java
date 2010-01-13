@@ -60,12 +60,12 @@ public class TestVersioned
 		session.flush();
 		session.clear();
 		tx.commit();
-		
-		Statement st = conn.createStatement();
-		st.executeUpdate("DROP FUNCTION PersistentVersionedObject_notification()");
-		st.executeUpdate("CREATE FUNCTION PersistentVersionedObject_notification() RETURNS TRIGGER AS $$ DECLARE a integer; BEGIN a = my_notify('PersistentVersionedObject#' || NEW.ID || '###' || NEW.VERSION); RETURN NULL; END; $$ LANGUAGE 'plpgsql';");
-		st.executeUpdate("CREATE TRIGGER PersistentVersionedObject_update_trigger AFTER DELETE OR UPDATE ON persistentversionedobject FOR EACH ROW EXECUTE PROCEDURE PersistentVersionedObject_notification();");
-		st.close();
+
+		Statement stmt = conn.createStatement();
+		stmt.executeUpdate("DROP FUNCTION PersistentVersionedObject_notification()");
+		stmt.executeUpdate("CREATE FUNCTION PersistentVersionedObject_notification() RETURNS TRIGGER AS $$ DECLARE a integer; BEGIN a = my_notify('persistentversionedobject#' || NEW.ID || '###' || NEW.VERSION); RETURN NULL; END; $$ LANGUAGE 'plpgsql';");
+		stmt.executeUpdate("CREATE TRIGGER PersistentVersionedObject_update_trigger AFTER DELETE OR UPDATE ON persistentversionedobject FOR EACH ROW EXECUTE PROCEDURE PersistentVersionedObject_notification();");
+		stmt.close();
 		}
 	
 	public void staleLoad(long i) throws SQLException
