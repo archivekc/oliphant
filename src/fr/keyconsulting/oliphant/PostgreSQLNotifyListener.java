@@ -45,13 +45,6 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 			conn = DriverManager.getConnection(config.getProperty("hibernate.connection.url"), config.getProperty("hibernate.connection.username"), config.getProperty("hibernate.connection.password"));
 			pgConn = (PGConnection) conn;
 			Statement stmt = conn.createStatement();
-			for (Iterator it = config.getClassMappings(); it.hasNext();)
-				{
-				PersistentClass p = (PersistentClass) it.next();
-				String table = p.getTable().getName();
-				stmt.executeUpdate("CREATE OR REPLACE FUNCTION oliphant_"+table+"() RETURNS TRIGGER AS $$ DECLARE a integer; BEGIN a = send_notify('oliphant', '"+table+"#' || NEW.ID || '###' || NEW.VERSION); RETURN NULL; END; $$ LANGUAGE 'plpgsql';");
-				stmt.executeUpdate("CREATE OR REPLACE TRIGGER oliphant_"+table+"_trg AFTER DELETE OR UPDATE ON "+table+" FOR EACH ROW EXECUTE PROCEDURE oliphant_"+table+"();");
-				}
 			stmt.execute("LISTEN oliphant");
 			stmt.close();
 			}
@@ -67,8 +60,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 
 		try
 			{
-			// issue a dummy query to contact the backend
-			// and receive any pending notifications.
+			// issue a dummy query to contact the backend and receive any pending notifications.
 			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("SELECT 1");
 			rs.close();
