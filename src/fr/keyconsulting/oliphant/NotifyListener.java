@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
 
 public class NotifyListener implements PostLoadEventListener, PersistEventListener, FlushEntityEventListener, PreUpdateEventListener
 	{
-	private static final long serialVersionUID = 1L;
-	private HashMap<String,String> versions = new HashMap<String,String>(); // Maps object UIDs to latest known versions
+	private static final long serialVersionUID = -8582214998956097719L;
+	private Map<String,String> versions = new HashMap<String,String>(); // Maps object UIDs to latest known versions
 	private SessionFactoryImplementor sessionFactory;
 	private SpecificNotifyListener specificNotifyListener;
 	private boolean allowStaleLoad = true;
