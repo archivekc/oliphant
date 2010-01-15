@@ -22,6 +22,8 @@
 package fr.keyconsulting.oliphant;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.HibernateException;
 import org.hibernate.cfg.Configuration;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -59,7 +61,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 			}
 		catch (SQLException sqle)
 			{
-			sqle.printStackTrace();
+			throw new HibernateException(sqle);
 			}
 		}
 
@@ -87,7 +89,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 			}
 		catch (SQLException sqle)
 			{
-			sqle.printStackTrace();
+			throw new HibernateException(sqle);
 			}
 
 		return notifs;
@@ -97,12 +99,11 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 		{
 		try
 			{
-			//stmt.executeUpdate("DROP FUNCTION oliphant_"+name+"()");
 			conn.close();
 			}
 		catch (SQLException sqle)
 			{
-			sqle.printStackTrace();
+			throw new HibernateException(sqle);
 			}
 		}
 	}

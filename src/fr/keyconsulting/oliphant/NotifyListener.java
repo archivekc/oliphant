@@ -249,15 +249,15 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 			}
 		catch (ClassNotFoundException e)
 			{
-			e.printStackTrace();
+			throw new HibernateException(e);
 			}
 		catch (InstantiationException e)
 			{
-			e.printStackTrace();
+			throw new HibernateException(e);
 			}
 		catch (IllegalAccessException e)
 			{
-			e.printStackTrace();
+			throw new HibernateException(e);
 			}
 		String allowStaleString = config.getProperty("oliphant.allow_stale_load");
 		if ((allowStaleString!=null) && (allowStaleString.equals("false"))) {listener.allowStaleLoad = false;}
