@@ -19,7 +19,7 @@
 
 *******************************************************************************/
 
-package fr.keyconsulting.oliphant;
+package fr.keyconsulting.oliphant.test;
 import javax.persistence.Id;
 import javax.persistence.Entity;
 import javax.persistence.Version;

@@ -19,13 +19,15 @@
 
 *******************************************************************************/
 
-package fr.keyconsulting.oliphant;
+package fr.keyconsulting.oliphant.test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.AnnotationConfiguration;
+
+import fr.keyconsulting.oliphant.NotifyListener;
 
 public class Utils
 	{
