@@ -26,7 +26,8 @@ import org.hibernate.cfg.Configuration;
 
 public interface SpecificNotifyListener
 	{
-	public void setUp(Configuration config); // Setup the notification system (create triggers, subscribe to update notifications, etc ?)
+	public void prepare(Configuration config); // Add triggers to the DDL, and keep the configuration for future reference
+	public void setUp(); // Connect to DB, subscribe to update notifications
 	public List<Notification> getLatestUpdates(); // Return the latest notifications
 	public void tearDown(); // Close the system properly (remove triggers, unsubscribe, etc ?)
 	}

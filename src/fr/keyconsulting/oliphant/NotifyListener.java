@@ -90,6 +90,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		{
 		// our first event, initialize the listener
 		sessionFactory = (SessionFactoryImplementor) event.getSession().getSessionFactory();
+		specificNotifyListener.setUp();
 		}
 	Object object = event.getEntity();
 	EventSource session = event.getSession();
@@ -246,7 +247,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 			{
 			Class specListClass = Class.forName(config.getProperty("oliphant.specific_listener"));
 			listener.specificNotifyListener = (SpecificNotifyListener) specListClass.newInstance();
-			listener.specificNotifyListener.setUp(config);
+			listener.specificNotifyListener.prepare(config);
 			}
 		catch (ClassNotFoundException e)
 			{

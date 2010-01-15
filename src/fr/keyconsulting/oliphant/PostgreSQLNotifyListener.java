@@ -22,9 +22,7 @@
 package fr.keyconsulting.oliphant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.mapping.PersistentClass;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -37,8 +35,15 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
 	private PGConnection pgConn;
 	private Connection conn;
+	private Configuration config;
 
-	public void setUp(Configuration config)
+	public void prepare(Configuration cfg)
+		{
+		config = cfg;
+		config.addAuxiliaryDatabaseObject(new PostgreSQLListenerAuxiliary(config));
+		}
+	
+	public void setUp()
 		{
 		try
 			{

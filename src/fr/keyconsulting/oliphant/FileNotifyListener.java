@@ -34,8 +34,14 @@ import org.hibernate.cfg.Configuration;
 class FileNotifyListener implements SpecificNotifyListener
 	{
 	private BufferedReader br;
+	private Configuration config;
 	
-	public void setUp(Configuration config)
+	public void prepare(Configuration cfg)
+		{
+		cfg = config;
+		}
+
+	public void setUp()
 		{       
 		String filename = config.getProperty("oliphant.file_notify.file");
 		if (filename == null)

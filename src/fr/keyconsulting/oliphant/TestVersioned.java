@@ -39,11 +39,16 @@ public class TestVersioned
 		{
 		conn = Utils.getJDBCConnection();
 
+		Statement st = conn.createStatement();
+		st.executeUpdate("DELETE FROM persistentversionedobject");
+		st.close();
+
 		sessionFactory = Utils.getSessionFactory();
 		magicSessionFactory = Utils.getMagicSessionFactory();
 
 		Session session = sessionFactory.getCurrentSession();
 		Transaction tx = session.beginTransaction();   
+
 		for (int i = 0; i<NB_ROWS; i++)
 			{
 			PersistentVersionedObject o = new PersistentVersionedObject();

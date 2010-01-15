@@ -83,7 +83,7 @@ public class Utils
 		config.setProperty("hibernate.connection.pool_size", "1");
 		//config.setProperty("hibernate.connection.autocommit", "true");
 		config.setProperty("hibernate.cache.provider_class", "org.hibernate.cache.NoCacheProvider");
-		//config.setProperty("hibernate.hbm2ddl.auto", "create");
+		config.setProperty("hibernate.hbm2ddl.auto", "create-drop");
 		config.setProperty("hibernate.show_sql", "true");
 		config.setProperty("hibernate.transaction.factory_class", "org.hibernate.transaction.JDBCTransactionFactory");
 		config.setProperty("hibernate.current_session_context_class", "thread");
