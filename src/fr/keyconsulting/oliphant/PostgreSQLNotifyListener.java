@@ -30,12 +30,16 @@ import java.sql.ResultSet;
 import java.sql.DriverManager;
 import org.postgresql.PGNotification;
 import org.postgresql.PGConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
 	private PGConnection pgConn;
 	private Connection conn;
 	private Configuration config;
+	
+	private static final Logger LOG = LoggerFactory.getLogger(NotifyListener.class);
 
 	public void prepare(Configuration cfg)
 		{
@@ -76,7 +80,7 @@ class PostgreSQLNotifyListener implements SpecificNotifyListener
 				{
 				for (int i=0; i<notifications.length; i++)
 					{
-					System.out.println("Notif from PostgreSQL : "+notifications[i].getParameter());
+					LOG.debug("Notif from PostgreSQL : "+notifications[i].getParameter());
 					notifs.add(new Notification(notifications[i].getParameter().split("###")));
 					}
 				}

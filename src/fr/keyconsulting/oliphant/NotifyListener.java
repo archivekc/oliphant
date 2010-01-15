@@ -32,8 +32,8 @@ import org.hibernate.cache.entry.CacheEntry;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.StaleObjectStateException;
-import org.hibernate.event.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NotifyListener implements PostLoadEventListener, PersistEventListener, FlushEntityEventListener, PreUpdateEventListener
 	{
@@ -43,11 +43,13 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	private SpecificNotifyListener specificNotifyListener;
 	private boolean allowStaleLoad = true;
 	private Configuration config;
-
+	
+	private static final Logger LOG = LoggerFactory.getLogger(NotifyListener.class);
+	
 	public void onPostLoad(PostLoadEvent event) throws StaleObjectStateException
 		{
-		System.out.println("Hibernate: Post load event");
-		ProcessLoadEvent(event, true);
+		LOG.debug("Hibernate: Post load event");
+		processLoadEvent(event, true);
 		if (!allowStaleLoad)
 			{
 			updateStaleUidsAndVersions();
@@ -57,34 +59,34 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	
 	public void onPersist(PersistEvent event, Map map) throws StaleObjectStateException
 		{
-		System.out.println("Hibernate:  Persist event");
+		LOG.debug("Hibernate:  Persist event");
 		updateStaleUidsAndVersions();
 		checkObject(event.getObject(), event.getSession());
 		}
 
 	public void onPersist(PersistEvent event) throws StaleObjectStateException
 		{
-		System.out.println("Hibernate:  Persist event");
+		LOG.debug("Hibernate:  Persist event");
 		updateStaleUidsAndVersions();
 		checkObject(event.getObject(), event.getSession());
 		}
 	
 	public void onFlushEntity(FlushEntityEvent event) throws StaleObjectStateException
 		{
-		System.out.println("Hibernate:  Flush entity event");
+		LOG.debug("Hibernate:  Flush entity event");
 		updateStaleUidsAndVersions();
 		checkObject(event.getEntity(), event.getSession());
 		}
 
 	public boolean onPreUpdate(PreUpdateEvent event)
 		{
-		System.out.println("Hibernate:  Pre-update event");
+		LOG.debug("Hibernate:  Pre-update event");
 		updateStaleUidsAndVersions();
 		checkObject(event.getEntity(), event.getSession());
 		return true;
 		}
 	
-	public Serializable ProcessLoadEvent(PostLoadEvent event, boolean throwStaleException) throws StaleObjectStateException
+	public Serializable processLoadEvent(PostLoadEvent event, boolean throwStaleException) throws StaleObjectStateException
 	{
 	if (sessionFactory == null)
 		{
@@ -110,23 +112,19 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 	public Serializable checkObject(Object object, EventSource session) throws StaleObjectStateException
 		{
 		Serializable identifier = session.getIdentifier(object);
-		System.out.print("* Checking object "+identifier+" : ");
+		LOG.debug("* Checking object "+identifier+" : ");
 		if (isKnownToBeStaleInSession(object, session))
 			{
-			System.out.print("Object is stale in session");
+			LOG.debug("Object is stale in session");
 			String entityName = session.getEntityName(object);
 			if (isKnownToBeStaleInL2(object, session))
 				{
-				System.out.println(" and in L2 cache");
+				LOG.debug(" and in L2 cache");
 				evictFromL2(object, session);
-				}
-			else
-				{
-				System.out.println();
 				}
 			throw new StaleObjectStateException(entityName, identifier);
 			}
-		System.out.println("Object is not verifiably stale");
+		LOG.debug("Object is not verifiably stale");
 		return null;
 		}
 
@@ -174,7 +172,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 					);
 			cacheAccessStrategy.evict(ck);
 			Serializable identifier = session.getIdentifier(object);
-			System.out.println("* Object "+identifier+" evicted from L2");
+			LOG.debug("* Object "+identifier+" evicted from L2");
 			}
 		}
 	}
