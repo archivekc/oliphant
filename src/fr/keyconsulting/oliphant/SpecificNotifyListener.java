@@ -1,6 +1,6 @@
 /*******************************************************************************
 
-   Copyright (C) 2009-1010 Key Consulting
+   Copyright (C) 2009-2010 Key Consulting
 
    This file is part of Oliphant.
  
