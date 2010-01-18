@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import fr.keyconsulting.oliphant.Notification;
 import fr.keyconsulting.oliphant.SpecificNotifyListener;
 
-class PostgreSQLNotifyListener implements SpecificNotifyListener
+public class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
 	private PGConnection pgConn;
 	private Connection conn;
