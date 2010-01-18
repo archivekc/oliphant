@@ -62,6 +62,8 @@
     <javac srcdir="${src}"
            destdir="${build}"
            classpathref="project.class.path"/>
+    <copy file="${src}/commons-logging.properties" todir="${build}"/>
+    <copy file="${src}/log4j.properties" todir="${build}"/>
   </target>
 
   <target name="dist" depends="build" description="generate the distribution" >
@@ -69,7 +71,7 @@
   </target>
 
   <target name="test" depends="build" description="run the poc test" >
-    <java classname="fr.keyconsulting.oliphant.TestVersioned"
+    <java classname="fr.keyconsulting.oliphant.test.TestVersioned"
           classpathref="project.class.path"/>
   </target>
 
