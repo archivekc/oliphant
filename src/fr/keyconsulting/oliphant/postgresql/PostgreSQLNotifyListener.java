@@ -19,7 +19,8 @@
 
 *******************************************************************************/
 
-package fr.keyconsulting.oliphant;
+package fr.keyconsulting.oliphant.postgresql;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,13 +36,16 @@ import org.postgresql.PGConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import fr.keyconsulting.oliphant.Notification;
+import fr.keyconsulting.oliphant.SpecificNotifyListener;
+
 class PostgreSQLNotifyListener implements SpecificNotifyListener
 	{
 	private PGConnection pgConn;
 	private Connection conn;
 	private Configuration config;
 	
-	private static final Logger LOG = LoggerFactory.getLogger(NotifyListener.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PostgreSQLNotifyListener.class);
 
 	public void prepare(Configuration cfg)
 		{

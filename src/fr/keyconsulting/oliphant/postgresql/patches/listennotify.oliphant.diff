@@ -1,0 +1,54 @@
+diff --git a/src/backend/utils/adt/misc.c b/src/backend/utils/adt/misc.c
+index 0545fd7..aed8428 100644
+--- a/src/backend/utils/adt/misc.c
++++ b/src/backend/utils/adt/misc.c
+@@ -386,3 +389,24 @@ pg_typeof(PG_FUNCTION_ARGS)
+ {
+ 	PG_RETURN_OID(get_fn_expr_argtype(fcinfo->flinfo, 0));
+ }
++
++
++/*
++ * send_notify -
++ *	  Send a notification
++ */
++Datum
++send_notify(PG_FUNCTION_ARGS)
++{
++	text	   *channel = PG_GETARG_TEXT_PP(0);
++	text	   *payload = PG_GETARG_TEXT_PP(1);
++	const char *channelStr;
++	const char *payloadStr;
++
++	channelStr = text_to_cstring(channel);
++	payloadStr = text_to_cstring(payload);
++
++	Async_Notify(channelStr, payloadStr);
++
++	PG_RETURN_VOID();
++}
+diff --git a/src/include/catalog/pg_proc.h b/src/include/catalog/pg_proc.h
+index 784da1b..471c9f7 100644
+--- a/src/include/catalog/pg_proc.h
++++ b/src/include/catalog/pg_proc.h
+@@ -4728,7 +4728,8 @@ DATA(insert OID = 3113 (  last_value	PGNSP PGUID 12 1 0 0 f t f t f i 1 0 2283 "
+ DESCR("fetch the last row value");
+ DATA(insert OID = 3114 (  nth_value		PGNSP PGUID 12 1 0 0 f t f t f i 2 0 2283 "2283 23" _null_ _null_ _null_ _null_ window_nth_value _null_ _null_ _null_ ));
+ DESCR("fetch the Nth row value");
+-
++DATA(insert OID = 3115 (  send_notify  PGNSP PGUID 12 1 0 0 f f f f f v 2 0 2278 "25 25" _null_ _null_ _null_ _null_ send_notify _null_ _null_ _null_));
++DESCR("send a notification to clients");
+
+ /*
+  * Symbolic values for provolatile column: these indicate whether the result
+diff --git a/src/include/utils/builtins.h b/src/include/utils/builtins.h
+index 91411a4..0e6f6e3 100644
+--- a/src/include/utils/builtins.h
++++ b/src/include/utils/builtins.h
+@@ -1031,4 +1031,6 @@ extern Datum pg_prepared_statement(PG_FUNCTION_ARGS);
+ /* utils/mmgr/portalmem.c */
+ extern Datum pg_cursor(PG_FUNCTION_ARGS);
+
++extern Datum send_notify(PG_FUNCTION_ARGS);
++
+ #endif   /* BUILTINS_H */
