@@ -39,14 +39,16 @@ public class Utils
 	
 	private static final SessionFactory sessionFactory;
 	private static final SessionFactory magicSessionFactory;
+	private static final AnnotationConfiguration config;
+	private static final AnnotationConfiguration magicConfig;
 	static
 		{
 		try
 			{
-			AnnotationConfiguration config = new AnnotationConfiguration();
+			config = new AnnotationConfiguration();
 			fillConfig(config);
 			sessionFactory = config.buildSessionFactory();
-			AnnotationConfiguration magicConfig = new AnnotationConfiguration();
+			magicConfig = new AnnotationConfiguration();
 			fillConfig(magicConfig);
 			NotifyListener.attachListener(magicConfig);
 			magicSessionFactory = magicConfig.buildSessionFactory();
@@ -58,6 +60,16 @@ public class Utils
 			}
 		}
 
+	public static AnnotationConfiguration getConfig()
+		{
+		return config;
+		}
+
+	public static AnnotationConfiguration getMagicConfig()
+		{
+		return magicConfig;
+		}
+	
 	public static SessionFactory getSessionFactory()
 		{
 		return sessionFactory;

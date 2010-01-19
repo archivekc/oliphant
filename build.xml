@@ -26,6 +26,8 @@
     <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/test/slf4j-log4j12.jar"/>
     <pathelement path="lib/postgresql-8.4-701.jdbc4.jar"/>
     <pathelement path="lib/ehcache-1.7.1/lib/ehcache-core-1.7.1.jar"/>
+    <pathelement path="lib/junit-4.7.jar"/>
+    <pathelement path="lib/hibernate-annotations-3.4.0.GA/lib/build/ant-junit-1.6.5.jar"/>
     <pathelement path="build/"/>
   </path>
 
@@ -70,9 +72,16 @@
     <jar jarfile="${dist}/oliphant-${DSTAMP}${TSTAMP}.jar" basedir="${build}"/>
   </target>
 
-  <target name="test" depends="build" description="run the poc test" >
-    <java classname="fr.keyconsulting.oliphant.test.TestVersioned"
+  <target name="benchmark" depends="build" description="run the benchmarking test" >
+    <java classname="fr.keyconsulting.oliphant.test.Benchmark"
           classpathref="project.class.path"/>
+  </target>
+
+  <target name="test" depends="build" description="run the unit tests" >
+    <junit printsummary="yes">
+      <classpath refid="project.class.path" />
+      <test name="fr.keyconsulting.oliphant.test.unitTests"/>
+    </junit>
   </target>
 
   <target name="clean" description="clean up" >

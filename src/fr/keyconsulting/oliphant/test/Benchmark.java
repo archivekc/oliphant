@@ -28,7 +28,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-public class TestVersioned
+public class Benchmark
 	{
 	private Connection conn;
 	private SessionFactory magicSessionFactory;
@@ -48,53 +48,52 @@ public class TestVersioned
 
 		Session session = sessionFactory.getCurrentSession();
 		Transaction tx = session.beginTransaction();   
+	        for (int i = 0; i<NB_ROWS; i++)
+	                {
+	                PersistentVersionedObject o = new PersistentVersionedObject();
+	                o.setId(i);
+	                o.setChampString("valeur string");
+	                o.setChampLong((long) 1);
+	                session.save(o);
+	                if (i%20  == 0)
+	                        {
+	                        session.flush();
+	                        session.clear();
+	                        }
+	                }
+	        session.flush();
+	        session.clear();
+	        tx.commit();
+	        }
 
-		for (int i = 0; i<NB_ROWS; i++)
-			{
-			PersistentVersionedObject o = new PersistentVersionedObject();
-			o.setId(i);
-			o.setChampString("valeur string");
-			o.setChampLong((long) 1);
-			session.save(o);
-			if (i%20  == 0)
-				{
-				session.flush();
-				session.clear();
-				}
-			}
-		session.flush();
-		session.clear();
-		tx.commit();
-		}
+	 public void staleLoad(long i) throws SQLException
+	        {
+	        Session session = magicSessionFactory.getCurrentSession();
 	
-	public void staleLoad(long i) throws SQLException
-		{
-		Session session = magicSessionFactory.getCurrentSession();
-		
-		System.out.println("Hibernate: starting transaction");
-		Transaction tx = session.beginTransaction();
-		
-		Statement st = conn.createStatement();
-		System.out.println("Updating object "+i+" outside Hibernate");
-		st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id="+i);
-		st.close();
-		
-		System.out.println("Hibernate: loading object "+i);
-		PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, i);
-		o.setChampString("valeur 1");
-		try
-			{
-			tx.commit();
-			}
-		catch (Exception e)
-			{
-			System.out.println(e);
-			System.out.println("  in "+e.getStackTrace()[0]);
-			}
+	        System.out.println("Hibernate: starting transaction");
+	        Transaction tx = session.beginTransaction();
+	
+	        Statement st = conn.createStatement();
+	        System.out.println("Updating object "+i+" outside Hibernate");
+	        st.executeUpdate("UPDATE persistentversionedobject SET version=version+1 WHERE id="+i);
+	        st.close();
 
-		System.out.println(sessionFactory.getStatistics());		
-		}
+	        System.out.println("Hibernate: loading object "+i);
+	        PersistentVersionedObject o = (PersistentVersionedObject) session.load(PersistentVersionedObject.class, i);
+	        o.setChampString("valeur 1");
+	        try
+	                {
+	                tx.commit();
+	                }
+	        catch (Exception e)
+	                {
+	                System.out.println(e);
+	                System.out.println("  in "+e.getStackTrace()[0]);
+	                }
 	
+	        System.out.println(sessionFactory.getStatistics());
+	        }
+
 	public void update(long id, boolean magic, boolean stale) throws SQLException
 		{
 		SessionFactory factory = magic ? magicSessionFactory : sessionFactory;
@@ -130,7 +129,7 @@ public class TestVersioned
 
 	public static void main(String[] args) throws Exception
 		{
-		TestVersioned test = new TestVersioned();
+		Benchmark test = new Benchmark();
 		test.setUp();
 
 		System.out.println("=== Simple update (normal) ===");
@@ -155,9 +154,6 @@ public class TestVersioned
 		
 		System.out.println("=== Normal update : "+simpleNormalTime+" ms , Normal magic update : "+simpleMagicTime+" ms -> magic = "+magicCost+"% x normal ===");
 		
-		System.out.println("=== Stale load ===");
-		test.staleLoad(4000);
-
 		System.out.println("=== Stale update (normal) ===");
 		long staleNormalStartTime = System.currentTimeMillis();
 		for(long i=2000; i<3000; i++)
