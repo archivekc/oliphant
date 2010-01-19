@@ -22,7 +22,11 @@
 package fr.keyconsulting.oliphant.postgresql;
 
 import java.util.Iterator;
+
+import org.hibernate.EntityMode;
+import org.hibernate.HibernateException;
 import org.hibernate.mapping.*;
+import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.Mapping;
@@ -30,8 +34,8 @@ import org.hibernate.engine.Mapping;
 public class PostgreSQLListenerAuxiliary extends AbstractAuxiliaryDatabaseObject
 	{
 	private static final long serialVersionUID = 1L;
-	private Configuration config; 
-	
+	private Configuration config;
+
 	public PostgreSQLListenerAuxiliary(Configuration config)
 		{
 		addDialectScope("org.hibernate.dialect.PostgreSQLDialect");
@@ -42,27 +46,45 @@ public class PostgreSQLListenerAuxiliary extends AbstractAuxiliaryDatabaseObject
 		{
 		StringBuilder sb = new StringBuilder();
 
-		for(Iterator i = config.getTableMappings(); i.hasNext();)
+		for(Iterator i = config.getClassMappings(); i.hasNext();)
 			{
-			Table t = (Table) i.next();
-			String table = t.getName().toLowerCase();
-			
-			sb.append("CREATE OR REPLACE FUNCTION oliphant_"+table+"() RETURNS TRIGGER AS $$\n");
+			PersistentClass c = (PersistentClass) i.next();
+			Table table = c.getTable();
+			if (table.getPrimaryKey().getColumnSpan()>1)
+				{
+				throw new HibernateException("Oliphant does not support primary keys that span multiple columns. Objects of class "+c.getClassName()+" will not be monitored for changes.");
+				}
+			String tableName = table.getName().toLowerCase();
+
+			String idColName = table.getPrimaryKey().getColumn(0).getName();
+
+			Iterator verCols = c.getVersion().getColumnIterator();
+			if (!verCols.hasNext())
+				{
+				throw new HibernateException("Oliphant does not support version properties that span multiple columns. Objects of class "+c.getClassName()+" will not be monitored for changes.");
+				}
+			Column verCol = (Column) verCols.next();
+			String verColName = verCol.getName();
+			if (verCols.hasNext())
+				{
+				throw new HibernateException("Oliphant does not support non versioned entities. Objects of class "+c.getClassName()+" will not be monitored for changes.");
+				}
+			sb.append("CREATE OR REPLACE FUNCTION oliphant_"+tableName+"() RETURNS TRIGGER AS $$\n");
 			sb.append("	DECLARE\n");
 			sb.append("		VERSION TEXT;\n");
 			sb.append("	BEGIN\n");
 			sb.append("		IF TG_OP = 'UPDATE' THEN\n");
-			sb.append("			VERSION := NEW.VERSION;\n");
+			sb.append("			VERSION := NEW."+verColName+";\n");
 			sb.append("		ELSIF TG_OP = 'DELETE' THEN\n");
 			sb.append("			VERSION := -1;\n");
 			sb.append("		END IF;\n");
-			sb.append("		PERFORM send_notify('oliphant', '"+table+"#' || OLD.ID || '###' || VERSION); RETURN NULL;\n");
+			sb.append("		PERFORM send_notify('oliphant', '"+tableName+"#' || OLD."+idColName+" || '###' || VERSION); RETURN NULL;\n");
 			sb.append("	END;\n");
 			sb.append("$$ LANGUAGE 'plpgsql';\n");
 			sb.append("\n");
-			sb.append("CREATE TRIGGER oliphant_"+table+"_trg\n");
-			sb.append("	AFTER DELETE OR UPDATE ON "+table+"\n");
-			sb.append("	FOR EACH ROW EXECUTE PROCEDURE oliphant_"+table+"();\n");
+			sb.append("CREATE TRIGGER oliphant_"+tableName+"_trg\n");
+			sb.append("	AFTER DELETE OR UPDATE ON "+tableName+"\n");
+			sb.append("	FOR EACH ROW EXECUTE PROCEDURE oliphant_"+tableName+"();\n");
 			sb.append("\n");
 			}
 
@@ -73,13 +95,17 @@ public class PostgreSQLListenerAuxiliary extends AbstractAuxiliaryDatabaseObject
 		{
 		StringBuilder sb = new StringBuilder();
 
-		for(Iterator i = config.getTableMappings(); i.hasNext();)
+		for(Iterator i = config.getClassMappings(); i.hasNext();)
 			{
-			Table t = (Table) i.next();
-			String table = t.getName().toLowerCase();
-			
-			sb.append("DROP FUNCTION oliphant_"+table+"()\n");
-			sb.append("\n");
+			PersistentClass c = (PersistentClass) i.next();
+			Table table = c.getTable();
+			if ((table.getPrimaryKey().getColumnSpan()==1) && (c.getVersion().getColumnSpan()==1))
+				{
+				String tableName = table.getName().toLowerCase();
+
+				sb.append("DROP FUNCTION oliphant_"+tableName+"()\n");
+				sb.append("\n");
+				}
 			}
 
 		return sb.toString();
