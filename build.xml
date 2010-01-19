@@ -67,7 +67,7 @@
   </target>
 
   <target name="dist" depends="build" description="generate the distribution" >
-    <jar jarfile="${dist}/oliphant-${DSTAMP}.jar" basedir="${build}"/>
+    <jar jarfile="${dist}/oliphant-${DSTAMP}${TSTAMP}.jar" basedir="${build}"/>
   </target>
 
   <target name="test" depends="build" description="run the poc test" >
@@ -81,8 +81,8 @@
   </target>
 
   <target name="snapshot" depends="dist" description="build the distribution snapshot" >
-    <delete file="${dist}/oliphant-${DSTAMP}.tar.gz" />
-    <tar destfile="${dist}/oliphant-${DSTAMP}.tar.gz"
+    <delete file="${dist}/oliphant-${DSTAMP}${TSTAMP}.tar.gz" />
+    <tar destfile="${dist}/oliphant-${DSTAMP}${TSTAMP}.tar.gz"
          compression="gzip"
          basedir="."
          includes="${dist}/*.jar, ${src}/**, ${build}/**, README"
