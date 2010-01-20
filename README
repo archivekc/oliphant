@@ -1,25 +1,66 @@
 Oliphant is a library that uses change notifications from database servers to improve the management of objects via the Hibernate Java ORM.
 
-Change notifications allow the library to detect stale objects before they are sent back to the database, and to remove them from the L2 cache.
+Change notifications allow the library to detect stale objects before they are sent back to the database. It can throw a StaleObjectStateException as soon as the persist method is called on a stale object, and remove it from the L2 cache if needed. There is also an option to throw the exception if a stale object is loaded, thereby preventing useless processing on the basis of this outdated object.
+Oliphant can detect stale objects at any hibernate event.
 
-Oliphant is still a proof of concept. It works with PostgreSQL using a C function that sends notifications to Oliphant via a file. We are working on a patch to PostgreSQL that would allow arbitrary payloads in PostgreSQL notifications, meaning Oliphant could work with native PostgreSQL notifications.
+Oliphant only works with PostgreSQL for now, and requires a notification function that is not yet part of PostgreSQL. In the meantime, a patch for the latest version of PostgreSQL is included in the Oliphant package.
 
-Oliphant is distributed under the Lesser GNU Public License (LGP).
+Oliphant is open source software, distributed under the Lesser GNU Public License (LGPL). Patches to PostgreSQL are released under the same BSD license as PostgreSQL itself.
 
-To use oliphant, you just need to add the jar or classes to your classpath and call the NotifyListener.attachListener static method on your hibernate configuration object before using it to get your hibernate session factory. You also need to set the specific notify listener to be used depending on your database server. For now, the only supported one is the PostgreSQLNotifyListener that comes in the package.
-
-It should look something like this :
-
-AnnotationConfiguration magicConfig = new AnnotationConfiguration();
-
-magicConfig.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-magicConfig.setProperty("oliphant.specific_listener", "fr.keyconsulting.oliphant.PostgreSQLNotifyListener");
-magicConfig.setProperty("oliphant.allow_stale_load", "true");
-
-NotifyListener.attachListener(magicConfig);
-magicSessionFactory = magicConfig.buildSessionFactory();
-
-config.addAnnotatedClass(PersistentVersionedObject.class);
+For questions, comments or patches, please contact opensource@keyconsulting.fr
 
 
-You will then get a staleObjectStateException sooner when trying to persist a stale object, and the hibernate L2 cache if used will be cleared of said stale object.
+Usage
+=====
+
+To use Oliphant, you just need to add the jar or classes to your classpath and call the NotifyListener.attachListener static method on your hibernate configuration object before using it to get your hibernate session factory.
+
+You will need to set the specific notify listener to be used depending on your database server. For now, the only supported one is the PostgreSQLNotifyListener that comes in the package.
+
+The end result should look something like this :
+
+	AnnotationConfiguration magicConfig = new AnnotationConfiguration();
+	 
+	magicConfig.setProperty("oliphant.specific_listener", "fr.keyconsulting.oliphant.postgresql.PostgreSQLNotifyListener");
+	magicConfig.setProperty("oliphant.allow_stale_load", "true"); // this is the default, set to false to allow StaleObjectState exceptions on load
+	 
+	// set your other properties here and add your classes
+	 
+	NotifyListener.attachListener(magicConfig);
+	 
+	magicSessionFactory = magicConfig.buildSessionFactory();
+
+Oliphant requires the creation of triggers on each table that you want monitored for changes. If you use Hibernate's hbm2ddl, the necessary SQL code will be automatically inserted in the DDL. Otherwise, you will need to create triggers manually. For each table, you should have a trigger after UPDATE and DELETE, that calls the send_notify function. Here is an example for a table named mytable with ID being the primary key column, and VERSION the versioning column :
+
+	CREATE OR REPLACE FUNCTION oliphant_mytable() RETURNS TRIGGER AS $$
+	    DECLARE
+	        VERSION TEXT;
+	    BEGIN
+	        IF TG_OP = 'UPDATE' THEN
+	            VERSION := NEW.VERSION;
+	        ELSIF TG_OP = 'DELETE' THEN
+	            VERSION := -1;
+	        END IF;
+	        PERFORM send_notify('oliphant', 'mytable#' || OLD.ID || '###' || VERSION); RETURN NULL;
+	    END;
+	$$ LANGUAGE 'plpgsql';
+	 
+	CREATE TRIGGER oliphant_mytable_trg
+	    AFTER DELETE OR UPDATE ON mytable
+	    FOR EACH ROW EXECUTE PROCEDURE oliphant_mytable();
+
+
+Technical notes
+===============
+
+When an object is modified in the database, the trigger needs to send the primary key and object class to the listener so that we know which object has become stale.
+
+PostgreSQL notifications do not accept a variable payload. We would need to create one notification for each database object. A patch was submitted in the latest PostgreSQL Commitfest that allows variable payloads in notifications via a send_notify SQL function. We hope this patch will make it into the next PostgreSQL release.
+
+With our notification setup on PostgreSQL, 1000 stale updates to our test database take about 3 seconds, from an original 8 seconds.. Conversely, 1000 non-stale updates take 3 seconds, from an original 2.5 seconds. This is an acceptable cost, that could probably be reduced with careful optimization. We expect the performance gain to improve in a setup where the database server and hibernate instance are disjoint, due to added network latency affecting database updates.
+
+Oracle database change notifications can only send row ids, which is not appropriate, but it seems we could use regular triggers and Oracle Streams to send the information we need. This is on our roadmap for the next version, as well as support for non-versioned hibernate objects.
+
+We have not looked into using Oliphant with database servers other than PostgreSQL and Oracle yet.
+
+
