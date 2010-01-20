@@ -76,7 +76,7 @@ public class PostgreSQLListenerAuxiliary extends AbstractAuxiliaryDatabaseObject
 			sb.append("		ELSIF TG_OP = 'DELETE' THEN\n");
 			sb.append("			VERSION := -1;\n");
 			sb.append("		END IF;\n");
-			sb.append("		PERFORM send_notify('oliphant', '"+tableName+"#' || encode(text(OLD."+idColName+")::bytea,'base64') || '###' || VERSION); RETURN NULL;\n");
+			sb.append("		PERFORM send_notify('oliphant', '"+tableName+"#' || encode(text(OLD."+idColName+")::bytea,'base64') || '###' || encode(text(VERSION)::bytea,'base64')); RETURN NULL;\n");
 			sb.append("	END;\n");
 			sb.append("$$ LANGUAGE 'plpgsql';\n");
 			sb.append("\n");

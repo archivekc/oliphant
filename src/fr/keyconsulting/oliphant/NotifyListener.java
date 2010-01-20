@@ -115,7 +115,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		if (!versions.containsKey(uid))
 			{
 			// We have not yet received notifications for this object
-			versions.put(uid, persister.getVersion(object, session.getEntityMode()).toString());
+			versions.put(uid, Base64.encodeBytes(persister.getVersion(object, session.getEntityMode()).toString().getBytes()));
 			}
 		}
 	return true;
@@ -160,7 +160,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 						);
 				CacheEntry cachedObject = (CacheEntry) cacheAccessStrategy.get(ck, Long.MAX_VALUE);
 				if (cachedObject==null) {return false;}
-				if (cachedObject.getDisassembledState()[persister.getVersionProperty()] != versions.get(uid)) {return true;}
+				if (Base64.encodeBytes(cachedObject.getDisassembledState()[persister.getVersionProperty()].toString().getBytes()) != versions.get(uid)) {return true;}
 				}
 			}
 		return false;
@@ -196,7 +196,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		if (versions.containsKey(uid))
 			{
 			EntityPersister persister = session.getEntityPersister(session.getEntityName(object), object);
-			String version = persister.getVersion(object, session.getEntityMode()).toString();
+			String version = Base64.encodeBytes(persister.getVersion(object, session.getEntityMode()).toString().getBytes());
 			if (!version.equals(versions.get(uid))) {return true;}
 			}
 		return false;
@@ -207,6 +207,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		String entityName = session.getEntityName(object);
 		String tableName = config.getClassMapping(entityName).getTable().getName().toLowerCase();
 		String id = Base64.encodeBytes(session.getIdentifier(object).toString().getBytes());
+
 		return tableName+"#"+id;
 		}
 
