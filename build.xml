@@ -89,13 +89,14 @@
     <delete dir="${dist}"/>
   </target>
 
-  <target name="snapshot" depends="dist" description="build the distribution snapshot" >
+  <target name="snapshot" depends="clean,dist" description="build the distribution snapshot" >
     <delete file="${dist}/oliphant-${DSTAMP}${TSTAMP}.tar.gz" />
     <tar destfile="${dist}/oliphant-${DSTAMP}${TSTAMP}.tar.gz"
-         compression="gzip"
-         basedir="."
-         includes="${dist}/*.jar, ${src}/**, ${build}/**, README, COPYING, COPYING.LESSER"
-         excludes="${src}/postgresql/postgresql-git/**" />
+         compression="gzip">
+    <tarfileset dir="."
+         prefix="oliphant-${DSTAMP}${TSTAMP}"
+         includes="${dist}/*.jar, ${src}/**, ${build}/**, README, COPYING, COPYING.LESSER" />
+	</tar>
   </target>
 </project>
 
