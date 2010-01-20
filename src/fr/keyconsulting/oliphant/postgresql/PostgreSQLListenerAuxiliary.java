@@ -23,10 +23,8 @@ package fr.keyconsulting.oliphant.postgresql;
 
 import java.util.Iterator;
 
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.mapping.*;
-import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.Mapping;
@@ -78,7 +76,7 @@ public class PostgreSQLListenerAuxiliary extends AbstractAuxiliaryDatabaseObject
 			sb.append("		ELSIF TG_OP = 'DELETE' THEN\n");
 			sb.append("			VERSION := -1;\n");
 			sb.append("		END IF;\n");
-			sb.append("		PERFORM send_notify('oliphant', '"+tableName+"#' || OLD."+idColName+" || '###' || VERSION); RETURN NULL;\n");
+			sb.append("		PERFORM send_notify('oliphant', '"+tableName+"#' || encode(text(OLD."+idColName+")::bytea,'base64') || '###' || VERSION); RETURN NULL;\n");
 			sb.append("	END;\n");
 			sb.append("$$ LANGUAGE 'plpgsql';\n");
 			sb.append("\n");

@@ -43,6 +43,7 @@ import org.hibernate.event.PostLoadEventListener;
 import org.hibernate.event.PreUpdateEvent;
 import org.hibernate.event.PreUpdateEventListener;
 import org.hibernate.persister.entity.EntityPersister;
+import org.postgresql.util.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -205,7 +206,7 @@ public class NotifyListener implements PostLoadEventListener, PersistEventListen
 		{
 		String entityName = session.getEntityName(object);
 		String tableName = config.getClassMapping(entityName).getTable().getName().toLowerCase();
-		String id = session.getIdentifier(object).toString();
+		String id = Base64.encodeBytes(session.getIdentifier(object).toString().getBytes());
 		return tableName+"#"+id;
 		}
 
