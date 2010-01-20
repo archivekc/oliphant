@@ -94,7 +94,7 @@
     <tar destfile="${dist}/oliphant-${DSTAMP}${TSTAMP}.tar.gz"
          compression="gzip"
          basedir="."
-         includes="${dist}/*.jar, ${src}/**, ${build}/**, README"
+         includes="${dist}/*.jar, ${src}/**, ${build}/**, README, COPYING, COPYING.LESSER"
          excludes="${src}/postgresql/postgresql-git/**" />
   </target>
 </project>
