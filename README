@@ -41,7 +41,7 @@ Oliphant requires the creation of triggers on each table that you want monitored
 	        ELSIF TG_OP = 'DELETE' THEN
 	            VERSION := -1;
 	        END IF;
-	        PERFORM send_notify('oliphant', 'mytable#' || OLD.ID || '###' || VERSION); RETURN NULL;
+		PERFORM send_notify('oliphant', 'persistentversionedobject#' || encode(text(OLD.id)::bytea,'base64') || '###' || encode(text(VERSION)::bytea,'base64'));
 	    END;
 	$$ LANGUAGE 'plpgsql';
 	 
